@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite the v0.2.0 release."
+title: "Institutional Tokenisation Architecture Workbench"
+abstract: "A synthetic reference workbench for designing, validating and simulating institutional tokenised asset, digital money, custody and settlement architectures."
+authors:
+  - family-names: Govind
+    given-names: Vishnu
+version: 0.2.0
+date-released: 2026-11-20
+url: https://github.com/vishnugovind10/institutional-tokenisation-architecture
+license: MIT
