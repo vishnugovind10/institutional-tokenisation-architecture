@@ -18,6 +18,8 @@ An independently developed reference architecture and browser workbench for inst
 - **Decisions:** ten illustrative ADRs.
 - **Settlement workbench:** change architecture assumptions and inject five deterministic failure cases.
 
+Detailed diagrams, architecture profiles and non-functional requirements are in [`docs/architecture.md`](docs/architecture.md). Full ADR context, alternatives, trade-offs and limitations are in [`docs/decisions.md`](docs/decisions.md).
+
 ## Run locally
 
 Requires Node.js 20 or newer.
