@@ -4,6 +4,8 @@ An independently developed reference architecture and browser workbench for inst
 
 **Scenario:** a synthetic €100 million institutional bond with a €5 million investor trade settled using tokenised bank deposits. All data and transaction evidence in the simulator are synthetic.
 
+**Live workbench:** [institutional-tokenisation-architec.vercel.app](https://institutional-tokenisation-architec.vercel.app)
+
 > This is a reference architecture and deterministic demonstration. It is not a production banking platform, legal opinion, compliance product, regulated settlement venue, institutional deployment or claim of endorsement. No existing portfolio project is technically integrated with this workbench.
 
 ## Explore
