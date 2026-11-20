@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://institutional-tokenisation-architec.vercel.app/sitemap.xml
