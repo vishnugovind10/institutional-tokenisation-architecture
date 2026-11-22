@@ -14,7 +14,7 @@ const frictions=['reconciliation','settlement-delay','fragmented-register','serv
 function validInputs(value:unknown):value is UseCaseInputs{
  if(!value||typeof value!=='object')return false;
  const x=value as Record<string,unknown>,r=x.readiness as Record<string,unknown>;
- return useCases.includes(String(x.useCase))&&Number.isFinite(x.annualEvents)&&Number(x.annualEvents)>=0&&Number.isFinite(x.participants)&&Number(x.participants)>=0
+ return useCases.includes(String(x.useCase))&&typeof x.annualEvents==='number'&&Number.isFinite(x.annualEvents)&&x.annualEvents>=0&&typeof x.participants==='number'&&Number.isFinite(x.participants)&&x.participants>=0
   &&Array.isArray(x.frictions)&&x.frictions.every(v=>frictions.includes(String(v)))
   &&Array.isArray(x.tokenisationMechanisms)&&x.tokenisationMechanisms.every(v=>mechanisms.includes(String(v)))
   &&typeof x.baselineEvidence==='string'&&typeof x.existingSystemGap==='string'
@@ -43,7 +43,7 @@ Deno.serve(async(req)=>{
  const decision=evaluateUseCase(body.inputs);
  const values={title,use_case:useCase,inputs:body.inputs,decision,engine_version:DECISION_ENGINE_VERSION,status:'draft',updated_by:user.id};
  const assessmentId=body.assessment_id?String(body.assessment_id):null;
- let saved;
+ let saved:{id:string;version:number;updated_at:string};
  if(assessmentId){
   const {data:existing,error:lookupError}=await admin.from('assessments').select('id,status,organization_id').eq('id',assessmentId).eq('organization_id',organizationId).maybeSingle();
   if(lookupError)return respond(500,{error:lookupError.message});
