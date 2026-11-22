@@ -60,8 +60,8 @@ export function evaluateUseCase(input: UseCaseInputs): Decision {
     { id: 'counterparty', label: 'Pilot counterparty identified', status: input.readiness.pilotCounterpartyIdentified ? 'READY' : 'OPEN', consequence: 'Identify at least one real issuer, investor, custodian, transfer agent or settlement participant willing to test the workflow.' },
     { id: 'data', label: 'Usable workflow data available', status: input.readiness.usableDataAvailable ? 'READY' : 'OPEN', consequence: 'Secure representative, permissioned data for a baseline and shadow run; synthetic data alone cannot validate the business case.' },
   ];
-  const open = gates.filter(g => g.status === 'OPEN');
   gates.splice(2, 0, { id: 'scale', label: 'Multi-party workflow is in scope', status: input.annualEvents >= 1 && input.participants >= 2 ? 'READY' : 'OPEN', consequence: 'Confirm at least one real workflow event per year and two or more participating parties; otherwise a conventional process may be simpler.' });
+  const open = gates.filter(g => g.status === 'OPEN');
   const problem = gates[0];
   const evidence = gates[1];
   let verdict: Decision['verdict'];
