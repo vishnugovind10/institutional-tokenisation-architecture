@@ -60,3 +60,10 @@ export async function inviteOrganizationMember(token:string,organizationId:strin
  if(!response.ok){const message=typeof data==='object'&&data&&'error'in data?String((data as {error:unknown}).error):'Invitation failed ('+response.status+')';throw new Error(message);}
  return data as {invited:boolean;user_id:string;email:string;role:string};
 }
+
+export async function submitAssessmentForReview(token:string,organizationId:string,assessmentId:string){
+ return rpc<{id:string;status:string;version:number}>('submit_assessment_for_review',token,{p_assessment_id:assessmentId,p_organization_id:organizationId});
+}
+export async function reviewAssessment(token:string,organizationId:string,assessmentId:string,action:'approved'|'rejected',comment:string){
+ return rpc<{id:string;status:string;version:number}>('review_assessment',token,{p_assessment_id:assessmentId,p_organization_id:organizationId,p_action:action,p_comment:comment});
+}
