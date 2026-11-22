@@ -11,6 +11,7 @@ A versioned institutional architecture workbench for tokenised securities, digit
 ## Contents
 
 - [Workbench](#workbench)
+- [Use-case decision](#use-case-decision)
 - [Run locally](#run-locally)
 - [Verify changes](#verify-changes)
 - [Model boundaries](#model-boundaries)
@@ -19,12 +20,23 @@ A versioned institutional architecture workbench for tokenised securities, digit
 
 ## Workbench
 
+- **Use-case decision:** assess whether a specific bond, fund-unit, private-credit or collateral workflow merits tokenisation; expose open gates; define a bounded pilot; export a decision memo.
 - **Architecture designer:** edit a versioned design, manage browser-local workspaces, and import/export JSON.
 - **Assessment:** inspect rule-level PASS, WARNING, FAIL and UNASSESSED findings without a composite score.
 - **Lifecycle simulator:** model issuance authorization, minting, investor onboarding, funding, subscription, DvP, coupon and redemption.
 - **Scenario laboratory:** run 14 deterministic baseline and exception scenarios with state, evidence, expected outcome and recovery guidance.
 - **Decision pack:** compare workspaces and export a configuration-aware Markdown, CSV and JSON pack.
 - **Research library:** browse 10 dated primary-source records across money, DLT, custody, integration, settlement and regulation.
+
+## Use-case decision
+
+Start with the workflow rather than the ledger. The decision studio captures the operational problem, annual workflow volume, participating parties, baseline evidence and minimum legal, settlement, operating-owner, counterparty and data prerequisites. It returns one of three outcomes:
+
+- **NO-GO:** no operational problem has been identified.
+- **HOLD:** a problem exists, but evidence or one or more prerequisites are missing.
+- **PILOT CANDIDATE:** the stated problem, baseline and minimum prerequisites support a bounded pilot proposal.
+
+The result is not a composite score, legal opinion or production approval. User-entered readiness is not independently verified. Pilot templates are platform-neutral and explicitly distinguish authoritative legal records from DLT representations. See [decision method and gate definitions](docs/use-case-decision-method.md).
 
 ## Run locally
 
