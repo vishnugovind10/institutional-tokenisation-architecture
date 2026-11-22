@@ -45,12 +45,13 @@ Deno.serve(async(req)=>{
  const assessmentId=body.assessment_id?String(body.assessment_id):null;
  let saved:{id:string;version:number;updated_at:string};
  if(assessmentId){
+  if(!/^[0-9a-f-]{36}$/i.test(assessmentId))return respond(400,{error:'Invalid assessment identifier'});
   const {data:existing,error:lookupError}=await admin.from('assessments').select('id,status,organization_id').eq('id',assessmentId).eq('organization_id',organizationId).maybeSingle();
   if(lookupError)return respond(500,{error:lookupError.message});
   if(!existing)return respond(404,{error:'Assessment not found in this organisation'});
   if(!['draft','rejected'].includes(existing.status))return respond(409,{error:'Only draft or rejected assessments can be edited'});
-  const {data,error}=await admin.from('assessments').update(values).eq('id',assessmentId).eq('organization_id',organizationId).select('id,version,updated_at').single();
-  if(error)return respond(400,{error:error.message});saved=data;
+  const {data,error}=await admin.from('assessments') .update(values).eq('id',assessmentId).eq('organization_id',organizationId).in('status',['draft','rejected']).select('id,version,updated_at').maybeSingle();
+  if(error)return respond(400,{error:error.message});if(!data)return respond(409,{error:'Assessment changed state while saving. Reload and retry.'});saved=data;
  }else{
   const {data,error}=await admin.from('assessments').insert({...values,organization_id:organizationId,created_by:user.id}).select('id,version,updated_at').single();
   if(error)return respond(400,{error:error.message});saved=data;
