@@ -1,15 +1,9 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Building2, KeyRound, LogOut, Plus, ShieldCheck } from 'lucide-react';
 import { createOrganization } from './provisioning';
 import { inviteOrganizationMember } from './client';
 import { getOrganizations, getCurrentUser, isSaasConfigured, listAssessments, readSession, refreshSession, saasConfig, signIn, signOut, signUp, type AuthSession, type AuditEvent, type CloudAssessment, type Organization, listAuditEvents, persistSession, saveCloudAssessment } from './client';
-type SaaSContextValue = {
- enabled:boolean; session:AuthSession|null; organization:Organization|null; organizations:Organization[];
- assessments:CloudAssessment[]; auditEvents:AuditEvent[]; busy:boolean; error:string; refreshAssessments:()=>Promise<void>;
- saveAssessment:(args:{id?:string|null;title:string;useCase:string;inputs:Record<string,unknown>;decision:Record<string,unknown>})=>Promise<{id:string;version:number}>;
-};
-const SaaSContext=createContext<SaaSContextValue>({enabled:false,session:null,organization:null,organizations:[],assessments:[],auditEvents:[],busy:false,error:'',refreshAssessments:async()=>{},saveAssessment:async()=>({id:'',version:0})});
-export const useSaaS=()=>useContext(SaaSContext);
+import { SaaSContext, type SaaSContextValue } from './context';
 export function SaaSRoot({children}:{children:ReactNode}){
  const [session,setSession]=useState<AuthSession|null>(()=>readSession()),[userReady,setUserReady]=useState(()=>!readSession()),[organizations,setOrganizations]=useState<Organization[]>([]),[organizationId,setOrganizationId]=useState(''),[assessments,setAssessments]=useState<CloudAssessment[]>([]),[auditEvents,setAuditEvents]=useState<AuditEvent[]>([]),[busy,setBusy]=useState(false),[error,setError]=useState(''),[authMode,setAuthMode]=useState<'signin'|'signup'>('signin'),[email,setEmail]=useState(''),[password,setPassword]=useState(''),[orgName,setOrgName]=useState(''),[inviteOpen,setInviteOpen]=useState(false),[inviteEmail,setInviteEmail]=useState(''),[inviteRole,setInviteRole]=useState<'admin'|'editor'|'reviewer'|'viewer'>('editor'),[inviteMessage,setInviteMessage]=useState('');
  const enabled=saasConfig.enabled;
