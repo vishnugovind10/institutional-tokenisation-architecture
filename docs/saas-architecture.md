@@ -10,7 +10,8 @@ The SaaS edition turns the local decision workbench into an organisation-scoped 
 - **Identity and data plane:** Supabase Auth and PostgreSQL.
 - **Tenant boundary:** organisation membership plus PostgreSQL Row Level Security on every tenant-owned table.
 - **Roles:** owner, admin, editor, reviewer and viewer. Only owner/admin/editor can create or update assessments.
-- **Decision record:** title, use case, complete input snapshot, decision snapshot, engine version, record version and timestamps.
+- **Decision record:** title, use case, complete input snapshot, decision snapshot, engine version, record version, author/updater identity and timestamps.
+- **Review workflow:** draft → in review → approved/rejected. Only an independent owner/admin/reviewer can approve or reject; the submitter cannot review their own assessment. Review comments and actions are retained.
 - **Audit:** database trigger writes a snapshot event on every assessment create/update and invited-member provisioning; application roles cannot update/delete audit events. The workbench displays the latest 100 tenant events.
 - **Hosting:** Vercel static frontend; Supabase is a separately provisioned managed backend.
 
@@ -28,13 +29,14 @@ The browser uses only the publishable/anon key. Browser-local architecture draft
 4. Tenant-isolated assessment persistence and database-side audit events.
 5. Deterministic decision snapshot versioning.
 6. Owner/admin email invitations through a Supabase Edge Function; membership is attached when the invited identity is created.
+7. Segregated assessment review with mandatory rationale and database-side author/reviewer separation.
 6. Read-only roles for reviewer/viewer.
 
 ## Required before a paid institutional deployment
 
 - Enterprise SSO (SAML/OIDC), MFA enforcement, SCIM lifecycle and verified invitations.
 - Admin UI for member lifecycle and role changes, invitation revocation and membership removal.
-- Assessment review/approval workflow, sign-off identity, segregation of duties and policy versioning.
+- Formal policy versioning, multi-stage approvals, delegated authority matrices and policy-specific sign-off.
 - Evidence attachment storage with malware scanning, encryption, retention and access logging.
 - Audit export, external immutable/WORM retention, SIEM integration and legal hold.
 - Tenant-specific data residency and contractual retention/deletion controls.
