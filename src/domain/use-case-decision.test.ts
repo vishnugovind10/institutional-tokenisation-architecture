@@ -41,7 +41,7 @@ describe('use-case decision logic', () => {
   });
   it('changes the pilot design for collateral rather than assuming token issuance', () => {
     const result = evaluateUseCase({ ...ready, useCase: 'collateral' });
-    expect(result.pilotScope[0]).toContain('collateral');
+    expect(result.pilotScope[0]).toContain('margin-call');
     expect(result.architecture.some(line => line.includes('pledge execution'))).toBe(true);
   });
 });
