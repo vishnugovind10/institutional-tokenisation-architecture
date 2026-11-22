@@ -61,6 +61,7 @@ export function evaluateUseCase(input: UseCaseInputs): Decision {
     { id: 'data', label: 'Usable workflow data available', status: input.readiness.usableDataAvailable ? 'READY' : 'OPEN', consequence: 'Secure representative, permissioned data for a baseline and shadow run; synthetic data alone cannot validate the business case.' },
   ];
   const open = gates.filter(g => g.status === 'OPEN');
+  gates.splice(2, 0, { id: 'scale', label: 'Multi-party workflow is in scope', status: input.annualEvents >= 1 && input.participants >= 2 ? 'READY' : 'OPEN', consequence: 'Confirm at least one real workflow event per year and two or more participating parties; otherwise a conventional process may be simpler.' });
   const problem = gates[0];
   const evidence = gates[1];
   let verdict: Decision['verdict'];
@@ -106,6 +107,7 @@ export function evaluateUseCase(input: UseCaseInputs): Decision {
     : open.length
       ? open.map(g => g.consequence)
       : ['Agree a narrow shadow-pilot boundary and named participants.', 'Capture a representative baseline before introducing the tokenised workflow.', 'Run the same cases through the current process and proposed design; compare measured outcomes.', 'Obtain legal, compliance, custody and operational sign-off before any live asset movement.'];
+  rationale += ` Workflow baseline: ${Math.max(0, Math.floor(input.annualEvents))} events/year across ${Math.max(0, Math.floor(input.participants))} parties.`;
   return {
     verdict,
     rationale,
