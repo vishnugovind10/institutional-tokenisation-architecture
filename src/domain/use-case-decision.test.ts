@@ -4,6 +4,8 @@ import { defaultUseCaseInputs, evaluateUseCase, type UseCaseInputs } from './use
 const ready: UseCaseInputs = {
   ...defaultUseCaseInputs,
   baselineEvidence: 'Current reconciliation takes 3 business days and requires 18 staff hours per issuance.',
+  tokenisationMechanisms: ['shared-state', 'conditional-settlement'],
+  existingSystemGap: 'Current APIs do not provide a consistent shared position state across the transfer agent, custodian and investor records.',
   readiness: {
     legalRegisterKnown: true,
     transferRulesDefined: true,
@@ -26,6 +28,10 @@ describe('use-case decision logic', () => {
     const result = evaluateUseCase({ ...ready, readiness: { ...ready.readiness, transferRulesDefined: false, settlementRouteKnown: false } });
     expect(result.verdict).toBe('HOLD');
     expect(result.gates.filter(g => g.status === 'OPEN').length).toBe(2);
+  });
+  it('holds when tokenisation has no stated mechanism or simpler alternatives are not assessed', () => {
+    expect(evaluateUseCase({ ...ready, tokenisationMechanisms: [] }).verdict).toBe('HOLD');
+    expect(evaluateUseCase({ ...ready, existingSystemGap: '' }).verdict).toBe('HOLD');
   });
   it('holds when the workflow is not a multi-party process', () => {
     const result = evaluateUseCase({ ...ready, annualEvents: 0, participants: 1 });
