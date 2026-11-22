@@ -110,7 +110,7 @@ begin
     insert into public.assessments(organization_id,title,use_case,inputs,decision,created_by,updated_by)
     values(p_organization_id,trim(p_title),p_use_case,p_inputs,p_decision,auth.uid(),auth.uid()) returning * into v_row;
   else
-    update public.assessments set title=trim(p_title),use_case=p_use_case,inputs=p_inputs,decision=p_decision,updated_by=auth.uid()
+    update public.assessments set title=trim(p_title),use_case=p_use_case,inputs=p_inputs,decision=p_decision,status='draft',updated_by=auth.uid()
     where id=p_assessment_id and organization_id=p_organization_id and status in ('draft','rejected') returning * into v_row;
     if v_row.id is null then raise exception 'Assessment not found in this organisation'; end if;
   end if;
@@ -129,9 +129,9 @@ create policy memberships_select_scoped on public.organization_memberships for s
 drop policy if exists assessments_select_member on public.assessments;
 create policy assessments_select_member on public.assessments for select to authenticated using(public.is_org_member(organization_id));
 drop policy if exists assessments_insert_editor on public.assessments;
-create policy assessments_insert_editor on public.assessments for insert to authenticated with check(public.has_org_role(organization_id,array['owner','admin','editor']) and created_by=auth.uid() and updated_by=auth.uid());
+create policy assessments_insert_editor on public.assessments for insert to authenticated with check(public.has_org_role(organization_id,array['owner','admin','editor']) and created_by=auth.uid() and updated_by=auth.uid() and status='draft');
 drop policy if exists assessments_update_editor on public.assessments;
-create policy assessments_update_editor on public.assessments for update to authenticated using(public.has_org_role(organization_id,array['owner','admin','editor'])) with check(public.has_org_role(organization_id,array['owner','admin','editor']) and updated_by=auth.uid());
+create policy assessments_update_editor on public.assessments for update to authenticated using(public.has_org_role(organization_id,array['owner','admin','editor']) and status in ('draft','rejected')) with check(public.has_org_role(organization_id,array['owner','admin','editor']) and updated_by=auth.uid() and status in ('draft','rejected'));
 drop policy if exists audit_select_member on public.audit_events;
 create policy audit_select_member on public.audit_events for select to authenticated using(public.is_org_member(organization_id));
 
