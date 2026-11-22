@@ -27,6 +27,11 @@ describe('use-case decision logic', () => {
     expect(result.verdict).toBe('HOLD');
     expect(result.gates.filter(g => g.status === 'OPEN').length).toBe(2);
   });
+  it('holds when the workflow is not a multi-party process', () => {
+    const result = evaluateUseCase({ ...ready, annualEvents: 0, participants: 1 });
+    expect(result.verdict).toBe('HOLD');
+    expect(result.gates.find(g => g.id === 'scale')?.status).toBe('OPEN');
+  });
   it('returns a bounded pilot candidate only when every gate is ready', () => {
     const result = evaluateUseCase(ready);
     expect(result.verdict).toBe('PILOT CANDIDATE');
