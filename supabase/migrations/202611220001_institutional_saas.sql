@@ -111,7 +111,7 @@ begin
     values(p_organization_id,trim(p_title),p_use_case,p_inputs,p_decision,auth.uid(),auth.uid()) returning * into v_row;
   else
     update public.assessments set title=trim(p_title),use_case=p_use_case,inputs=p_inputs,decision=p_decision,updated_by=auth.uid()
-    where id=p_assessment_id and organization_id=p_organization_id returning * into v_row;
+    where id=p_assessment_id and organization_id=p_organization_id and status in ('draft','rejected') returning * into v_row;
     if v_row.id is null then raise exception 'Assessment not found in this organisation'; end if;
   end if;
   return jsonb_build_object('id',v_row.id,'version',v_row.version,'updated_at',v_row.updated_at);
@@ -179,3 +179,67 @@ end; $$;
 drop trigger if exists auth_user_organization_invite on auth.users;
 create trigger auth_user_organization_invite after insert on auth.users
 for each row execute function public.attach_invited_user_to_organization();
+
+-- Independent review is separate from the authoring path.
+create table if not exists public.assessment_reviews (
+  id uuid primary key default gen_random_uuid(),
+  organization_id uuid not null references public.organizations(id) on delete cascade,
+  assessment_id uuid not null references public.assessments(id) on delete cascade,
+  reviewer_id uuid not null references auth.users(id),
+  action text not null check (action in ('approved','rejected')),
+  comment text not null check (char_length(trim(comment)) >= 8),
+  assessment_version integer not null,
+  created_at timestamptz not null default now()
+);
+create index if not exists assessment_reviews_org_created_idx on public.assessment_reviews(organization_id,created_at desc);
+alter table public.assessment_reviews enable row level security;
+drop policy if exists assessment_reviews_select_member on public.assessment_reviews;
+create policy assessment_reviews_select_member on public.assessment_reviews for select to authenticated using(public.is_org_member(organization_id));
+revoke all on public.assessment_reviews from anon,authenticated;
+grant select on public.assessment_reviews to authenticated;
+
+create or replace function public.reject_review_mutation()
+returns trigger language plpgsql
+as $$ begin raise exception 'Assessment reviews are append-only'; end; $$;
+drop trigger if exists assessment_reviews_no_update on public.assessment_reviews;
+create trigger assessment_reviews_no_update before update or delete on public.assessment_reviews for each row execute function public.reject_review_mutation();
+revoke all on function public.reject_review_mutation() from public,anon,authenticated;
+
+create or replace function public.submit_assessment_for_review(p_assessment_id uuid,p_organization_id uuid)
+returns jsonb language plpgsql security definer set search_path=public,auth
+as $$
+declare v_row public.assessments;
+begin
+  if not public.has_org_role(p_organization_id,array['owner','admin','editor']) then raise exception 'Insufficient organisation role'; end if;
+  update public.assessments set status='in_review',updated_by=auth.uid()
+  where id=p_assessment_id and organization_id=p_organization_id and status in ('draft','rejected')
+  returning * into v_row;
+  if v_row.id is null then raise exception 'Assessment cannot be submitted from its current state'; end if;
+  return jsonb_build_object('id',v_row.id,'status',v_row.status,'version',v_row.version);
+end; $$;
+
+create or replace function public.review_assessment(p_assessment_id uuid,p_organization_id uuid,p_action text,p_comment text)
+returns jsonb language plpgsql security definer set search_path=public,auth
+as $$
+declare v_row public.assessments;
+declare v_status text;
+begin
+  if p_action not in ('approved','rejected') then raise exception 'Review action must be approved or rejected'; end if;
+  if char_length(trim(coalesce(p_comment,''))) < 8 then raise exception 'A review comment of at least 8 characters is required'; end if;
+  if not public.has_org_role(p_organization_id,array['owner','admin','reviewer']) then raise exception 'Insufficient reviewer role'; end if;
+  update public.assessments set status=p_action,updated_by=auth.uid()
+  where id=p_assessment_id and organization_id=p_organization_id and status='in_review'
+    and created_by<>auth.uid() and updated_by<>auth.uid()
+  returning * into v_row;
+  if v_row.id is null then raise exception 'Independent review required; author cannot approve or reject their own submission'; end if;
+  insert into public.assessment_reviews(organization_id,assessment_id,reviewer_id,action,comment,assessment_version)
+  values(p_organization_id,p_assessment_id,auth.uid(),p_action,trim(p_comment),v_row.version);
+  insert into public.audit_events(organization_id,actor_id,entity_type,entity_id,action,payload)
+  values(p_organization_id,auth.uid(),'assessment',p_assessment_id,'assessment.'||p_action,jsonb_build_object('comment',trim(p_comment),'version',v_row.version));
+  return jsonb_build_object('id',v_row.id,'status',v_row.status,'version',v_row.version);
+end; $$;
+
+revoke all on function public.submit_assessment_for_review(uuid,uuid) from public;
+grant execute on function public.submit_assessment_for_review(uuid,uuid) to authenticated;
+revoke all on function public.review_assessment(uuid,uuid,text,text) from public;
+grant execute on function public.review_assessment(uuid,uuid,text,text) to authenticated;
