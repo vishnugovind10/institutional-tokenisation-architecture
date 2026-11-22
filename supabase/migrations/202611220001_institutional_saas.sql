@@ -150,3 +150,27 @@ grant execute on function public.save_assessment(uuid,uuid,text,text,jsonb,jsonb
 
 -- Invitations are intentionally delegated to a server-side Supabase Edge Function.
 -- Never expose a service-role key to the browser.
+
+-- An organisation invite carries the target organisation and role in Auth user metadata.
+-- The membership is created server-side when the invited identity is provisioned.
+create or replace function public.attach_invited_user_to_organization()
+returns trigger language plpgsql security definer set search_path=public,auth
+as $$
+declare v_org uuid;
+declare v_role text;
+begin
+  v_org:=nullif(new.raw_user_meta_data->>'organization_id','')::uuid;
+  v_role:=coalesce(new.raw_user_meta_data->>'organization_role','viewer');
+  if v_org is not null and v_role in ('admin','editor','reviewer','viewer')
+     and exists(select 1 from public.organizations where id=v_org) then
+    insert into public.organization_memberships(organization_id,user_id,role)
+    values(v_org,new.id,v_role)
+    on conflict(organization_id,user_id) do nothing;
+    insert into public.audit_events(organization_id,actor_id,entity_type,entity_id,action,payload)
+    values(v_org,null,'membership',new.id,'membership.invited',jsonb_build_object('email',new.email,'role',v_role));
+  end if;
+  return new;
+end; $$;
+drop trigger if exists auth_user_organization_invite on auth.users;
+create trigger auth_user_organization_invite after insert on auth.users
+for each row execute function public.attach_invited_user_to_organization();
