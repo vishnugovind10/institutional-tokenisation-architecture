@@ -56,7 +56,7 @@ export function persistSession(session:AuthSession|null){writeSession(session);}
 
 export async function inviteOrganizationMember(token:string,organizationId:string,email:string,role:'admin'|'editor'|'reviewer'|'viewer'){
  const response=await fetch(saasConfig.url+'/functions/v1/invite-member',{method:'POST',headers:{apikey:saasConfig.anonKey,Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({organization_id:organizationId,email,role})});
- const raw=await response.text();let data:unknown=null;try{data=raw?JSON.parse(raw):null;}catch{data=raw;}
+ const raw=await response.text();let data:unknown;try{data=raw?JSON.parse(raw):null;}catch{data=raw;}
  if(!response.ok){const message=typeof data==='object'&&data&&'error'in data?String((data as {error:unknown}).error):'Invitation failed ('+response.status+')';throw new Error(message);}
  return data as {invited:boolean;user_id:string;email:string;role:string};
 }
