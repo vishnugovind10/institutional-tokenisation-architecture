@@ -6,7 +6,7 @@ import { compareArchitectures, generateDecisionPack, matrixCsv, packMarkdown, sy
 import { runScenario, scenarioCatalog, type ScenarioOutcome } from './domain/scenarios';
 import { searchSources, sources } from './domain/research';
 import { defaultUseCaseInputs, evaluateUseCase, frictionOptions, mechanismOptions, type Friction, type Readiness, type TokenisationMechanism, type UseCaseInputs } from './domain/use-case-decision';
-import { appendScenarioRun, createStoredWorkspaces, deleteWorkspace, duplicateWorkspace, importWorkspace, loadStoredWorkspaces, persistStoredWorkspaces, upsertWorkspace, type StoredWorkspaces } from './workbench/storage';
+import { appendScenarioRun, createStoredWorkspaces, deleteWorkspace, duplicateWorkspace, importWorkspace, loadStoredWorkspaces, persistStoredWorkspaces, upsertWorkspace, type StoredWorkspaces, type StoragePort } from './workbench/storage';
 import { useSaaS } from './saas/context';
 
 type Page='overview'|'decision'|'designer'|'assessment'|'lifecycle'|'scenarios'|'compare'|'research'|'money'|'dlt'|'custody'|'integration'|'regulation'|'about';
@@ -30,17 +30,20 @@ const pageTitles:Record<Page,string>={overview:'Design workspace',decision:'Use-
 const groups=['Design workspace','Engineering','Research library','Project'];
 const pretty=(v:string)=>v.replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
 const fmtMinor=(minor:number,currency:string)=>new Intl.NumberFormat('en-GB',{style:'currency',currency,maximumFractionDigits:2}).format(minor/100);
-function loadInitial():StoredWorkspaces{try{return loadStoredWorkspaces(window.localStorage);}catch{return createStoredWorkspaces();}}
+function loadInitial(storage:StoragePort):StoredWorkspaces{try{return loadStoredWorkspaces(storage);}catch{return createStoredWorkspaces();}}
+function tenantStorage(scope:string):StoragePort{const prefix='ita-tenant:'+scope+':';return {getItem:key=>window.localStorage.getItem(prefix+key),setItem:(key,value)=>window.localStorage.setItem(prefix+key,value)};}
 
 export default function App(){
- const [store,setStore]=useState<StoredWorkspaces>(loadInitial);
+ const saas=useSaaS();
+ const storage=useMemo(()=>saas.enabled&&saas.organization&&saas.session?tenantStorage(saas.organization.id+':'+saas.session.user.id):window.localStorage,[saas.enabled,saas.organization?.id,saas.session?.user.id]);
+ const [store,setStore]=useState<StoredWorkspaces>(()=>loadInitial(storage));
  const [page,setPage]=useState<Page>(()=>{const hash=window.location.hash.slice(1) as Page;return pages.some(p=>p.id===hash)?hash:'overview';});
  const [mobileNav,setMobileNav]=useState(false),[notice,setNotice]=useState(''),[query,setQuery]=useState(''),[sourceCategory,setSourceCategory]=useState('All');
  const [scenarioId,setScenarioId]=useState('baseline'),[lastScenario,setLastScenario]=useState<ScenarioOutcome|null>(null),[compareLeft,setCompareLeft]=useState(''),[compareRight,setCompareRight]=useState('');
  const [ledger,setLedger]=useState<LedgerState>(()=>createLedgerState()),[lifecycleNotice,setLifecycleNotice]=useState('Prepare the sandbox or run individual domain commands.');
  const workspace=store.workspaces.find(w=>w.id===store.activeId)||store.workspaces[0];
  const config=workspace.config,findings=useMemo(()=>validateArchitecture(config),[config]),summary=assessmentSummary(findings),matrix=useMemo(()=>systemOfRecordMatrix(config),[config]);
- useEffect(()=>{try{persistStoredWorkspaces(window.localStorage,store);}catch{console.warn('Browser storage is unavailable; export the workspace to keep a local copy.');}},[store]);
+ useEffect(()=>{try{persistStoredWorkspaces(storage,store);}catch{console.warn('Browser storage is unavailable; export the workspace to keep a local copy.');}},[storage,store]);
  useEffect(()=>{const onHash=()=>{const hash=window.location.hash.slice(1) as Page;if(pages.some(p=>p.id===hash))setPage(hash);};window.addEventListener('hashchange',onHash);return()=>window.removeEventListener('hashchange',onHash);},[]);
  useEffect(()=>{document.title=`${pageTitles[page]} | Institutional Tokenisation Architecture`;const desc=document.querySelector('meta[name="description"]');desc?.setAttribute('content',`Institutional financial infrastructure workbench: ${pageTitles[page].toLowerCase()} for tokenised securities, money, custody and settlement.`);let canonical=document.querySelector<HTMLLinkElement>('link[rel="canonical"]');if(!canonical){canonical=document.createElement('link');canonical.rel='canonical';document.head.appendChild(canonical);}canonical.href=`https://institutional-tokenisation-architec.vercel.app/#${page}`;},[page]);
  const navigate=(id:Page)=>{setPage(id);window.history.pushState(null,'',`#${id}`);setMobileNav(false);};
@@ -214,9 +217,9 @@ function UseCaseDecision(){
  const [assessmentTitle,setAssessmentTitle]=useState('Tokenisation use-case assessment');
  const [selectedAssessmentId,setSelectedAssessmentId]=useState<string|null>(null);
  const [cloudMessage,setCloudMessage]=useState('');
- const [inputs,setInputs]=useState<UseCaseInputs>(()=>{try{const raw=localStorage.getItem('ita-use-case-decision-v1');if(!raw)return defaultUseCaseInputs;const saved=JSON.parse(raw) as Partial<UseCaseInputs>;return {...defaultUseCaseInputs,...saved,readiness:{...defaultUseCaseInputs.readiness,...saved.readiness}};}catch{return defaultUseCaseInputs;}});
+ const [inputs,setInputs]=useState<UseCaseInputs>(()=>{if(saas.enabled)return defaultUseCaseInputs;try{const raw=localStorage.getItem('ita-use-case-decision-v1');if(!raw)return defaultUseCaseInputs;const saved=JSON.parse(raw) as Partial<UseCaseInputs>;return {...defaultUseCaseInputs,...saved,readiness:{...defaultUseCaseInputs.readiness,...saved.readiness}};}catch{return defaultUseCaseInputs;}});
  const decision=useMemo(()=>evaluateUseCase(inputs),[inputs]);
- useEffect(()=>{try{localStorage.setItem('ita-use-case-decision-v1',JSON.stringify(inputs));}catch{console.warn('Decision workspace could not be saved in browser storage.');}},[inputs]);
+ useEffect(()=>{if(saas.enabled)return;try{localStorage.setItem('ita-use-case-decision-v1',JSON.stringify(inputs));}catch{console.warn('Decision workspace could not be saved in browser storage.');}},[inputs,saas.enabled]);
  const updateReadiness=(key:keyof Readiness,value:boolean)=>setInputs(current=>({...current,readiness:{...current.readiness,[key]:value}}));
  const toggleFriction=(key:Friction)=>setInputs(current=>({...current,frictions:current.frictions.includes(key)?current.frictions.filter(x=>x!==key):[...current.frictions,key]}));
  const toggleMechanism=(key:TokenisationMechanism)=>setInputs(current=>({...current,tokenisationMechanisms:current.tokenisationMechanisms.includes(key)?current.tokenisationMechanisms.filter(x=>x!==key):[...current.tokenisationMechanisms,key]}));
