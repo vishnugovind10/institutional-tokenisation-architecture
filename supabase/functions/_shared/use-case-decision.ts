@@ -1,8 +1,9 @@
-export const DECISION_ENGINE_VERSION = 'use-case-decision/2.1';
+export const DECISION_ENGINE_VERSION = 'use-case-decision/2.2';
 export type UseCase = 'tokenised-bond' | 'fund-units' | 'private-credit' | 'collateral';
 export type Friction = 'reconciliation' | 'settlement-delay' | 'fragmented-register' | 'servicing-cost' | 'distribution-friction' | 'manual-eligibility';
 export type TokenisationMechanism = 'shared-state' | 'programmable-rights' | 'conditional-settlement' | 'lifecycle-automation' | 'portable-entitlements';
 export type EvidenceQuality = 'user-confirmed' | 'assumption' | 'missing';
+export type EconomicObjective = 'cost' | 'time' | 'exceptions';
 export type DependencyId = 'authority' | 'rights' | 'eligibility' | 'custody' | 'technology' | 'cash' | 'owner' | 'counterparty' | 'data';
 export type Readiness = {
   legalRegisterKnown: boolean;
@@ -24,6 +25,11 @@ export type EconomicCase = {
   proposedExceptionRatePct: number | null;
   oneTimeImplementationCostEur: number | null;
   annualOperatingCostEur: number | null;
+  primaryObjective: EconomicObjective;
+  costDeteriorationTolerancePct: number;
+  timeDeteriorationTolerancePct: number;
+  exceptionDeteriorationTolerancePct: number;
+  acceptMaterialDeterioration: boolean;
   sourceNote: string;
   baselineQuality: EvidenceQuality;
   proposedQuality: EvidenceQuality;
@@ -55,7 +61,7 @@ export type Decision = {
   successMeasures: string[];
   nextActions: string[];
   decisionDrivers: string[];
-  economicSummary: { annualCostSavingEur: number | null; annualHoursSaved: number | null; annualExceptionsAvoided: number | null; netFirstYearEur: number | null; netRecurringEur: number | null; note: string };
+  economicSummary: { annualCostSavingEur: number | null; annualHoursSaved: number | null; annualExceptionsAvoided: number | null; netFirstYearEur: number | null; netRecurringEur: number | null; primaryObjective: EconomicObjective; primaryObjectiveImproved: boolean | null; improvements: string[]; deteriorations: string[]; materialDeteriorations: string[]; tradeoffAccepted: boolean; note: string };
   failureScenarios: { id: string; name: string; expected: string }[];
   assumptions: string[];
 };
@@ -73,7 +79,7 @@ export const defaultUseCaseInputs: UseCaseInputs = {
   tokenisationMechanisms: ['shared-state', 'conditional-settlement'],
   existingSystemGap: 'SAMPLE ONLY: current database and API workflow is assumed to require manual cross-party position reconciliation.',
   alternativeEvidenceQuality: 'assumption', conventionalAlternative: 'not-assessed',
-  economics: { baselineCostPerEventEur: 420, proposedCostPerEventEur: 310, baselineHoursPerEvent: 6.5, proposedHoursPerEvent: 3.8, baselineExceptionRatePct: 9, proposedExceptionRatePct: 4, oneTimeImplementationCostEur: null, annualOperatingCostEur: null, sourceNote: 'Synthetic illustrative values only; replace with measured baseline and a costed target.', baselineQuality: 'assumption', proposedQuality: 'assumption' },
+  economics: { baselineCostPerEventEur: 420, proposedCostPerEventEur: 310, baselineHoursPerEvent: 6.5, proposedHoursPerEvent: 3.8, baselineExceptionRatePct: 9, proposedExceptionRatePct: 4, oneTimeImplementationCostEur: null, annualOperatingCostEur: null, primaryObjective: 'cost', costDeteriorationTolerancePct: 10, timeDeteriorationTolerancePct: 10, exceptionDeteriorationTolerancePct: 10, acceptMaterialDeterioration: false, sourceNote: 'Synthetic illustrative values only; replace with measured baseline and a costed target.', baselineQuality: 'assumption', proposedQuality: 'assumption' },
   dependencyOwners: { ...owners },
   dependencyEvidence: { authority: 'assumption', rights: 'assumption', eligibility: 'assumption', custody: 'missing', technology: 'missing', cash: 'assumption', owner: 'assumption', counterparty: 'missing', data: 'assumption' },
   readiness: { legalRegisterKnown: true, transferRulesDefined: false, settlementRouteKnown: true, accountableOwner: true, pilotCounterpartyIdentified: false, usableDataAvailable: true, collateralEligibilityKnown: false, custodyControlKnown: false, technologyBoundaryDefined: false },
@@ -122,6 +128,16 @@ const dependencyConsequences: Record<DependencyId, string> = {
 function safeNonNegative(value: number | null): number | null {
   return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : null;
 }
+function metricTradeoff(label: string, baseline: number | null, proposed: number | null, tolerance: number) {
+  const base = safeNonNegative(baseline), target = safeNonNegative(proposed);
+  if (base === null || target === null) return null;
+  const direction = target < base ? 'improvement' as const : target > base ? 'deterioration' as const : 'unchanged' as const;
+  const changePct = base === 0 ? (target === 0 ? 0 : null) : (target - base) / base * 100;
+  const material = direction === 'deterioration' && (changePct === null || changePct > Math.max(0, tolerance));
+  const magnitude = changePct === null ? 'increased from zero' : `${Math.abs(changePct).toFixed(1)}%`;
+  const description = direction === 'unchanged' ? `${label}: unchanged.` : `${label}: ${direction === 'improvement' ? 'improves' : 'deteriorates'} ${magnitude}${material ? ` (exceeds ${Math.max(0, tolerance)}% tolerance)` : ''}.`;
+  return { label, baseline: base, proposed: target, direction, changePct, tolerance: Math.max(0, tolerance), material, description };
+}
 function economicSummary(input: UseCaseInputs): Decision['economicSummary'] {
   const e = input.economics;
   const baseCost = safeNonNegative(e.baselineCostPerEventEur), proposedCost = safeNonNegative(e.proposedCostPerEventEur);
@@ -134,8 +150,17 @@ function economicSummary(input: UseCaseInputs): Decision['economicSummary'] {
   const implementation = safeNonNegative(e.oneTimeImplementationCostEur), runCost = safeNonNegative(e.annualOperatingCostEur);
   const netFirstYear = cost !== null && implementation !== null && runCost !== null ? cost - implementation - runCost : null;
   const netRecurring = cost !== null && runCost !== null ? cost - runCost : null;
+  const comparisons = [
+    metricTradeoff('Cost / event', baseCost, proposedCost, e.costDeteriorationTolerancePct),
+    metricTradeoff('Hours / event', baseHours, proposedHours, e.timeDeteriorationTolerancePct),
+    metricTradeoff('Exception rate', baseExceptions, proposedExceptions, e.exceptionDeteriorationTolerancePct),
+  ].filter((item): item is NonNullable<typeof item> => item !== null);
+  const primary = comparisons.find(item => item.label === ({ cost: 'Cost / event', time: 'Hours / event', exceptions: 'Exception rate' }[e.primaryObjective]));
+  const improvements = comparisons.filter(item => item.direction === 'improvement').map(item => item.description);
+  const deteriorations = comparisons.filter(item => item.direction === 'deterioration').map(item => item.description);
+  const materialDeteriorations = comparisons.filter(item => item.material).map(item => item.description);
   const hasAny = cost !== null || hours !== null || exceptions !== null;
-  return { annualCostSavingEur: cost, annualHoursSaved: hours, annualExceptionsAvoided: exceptions, netFirstYearEur: netFirstYear, netRecurringEur: netRecurring, note: hasAny ? `Illustrative annualised operating difference over ${events} events; proposed values are ${qualities(e.proposedQuality)} and are not realised savings. Net returns include implementation and run costs only when both are entered.` : 'Add baseline and proposed values for at least one comparable measure.' };
+  return { annualCostSavingEur: cost, annualHoursSaved: hours, annualExceptionsAvoided: exceptions, netFirstYearEur: netFirstYear, netRecurringEur: netRecurring, primaryObjective: e.primaryObjective, primaryObjectiveImproved: primary ? primary.direction === 'improvement' : null, improvements, deteriorations, materialDeteriorations, tradeoffAccepted: materialDeteriorations.length > 0 && e.acceptMaterialDeterioration, note: hasAny ? `Annualised modeled differences over ${events} events. Proposed values are ${qualities(e.proposedQuality)} and are not measured outcomes. The primary objective is ${e.primaryObjective}; material deteriorations require explicit acceptance. Net returns include implementation and run costs only when entered.` : 'Add baseline and proposed values for at least one comparable measure.' };
 }
 
 export function evaluateUseCase(input: UseCaseInputs): Decision {
@@ -149,16 +174,19 @@ export function evaluateUseCase(input: UseCaseInputs): Decision {
   const dependencyOwners = { ...owners, ...(input.dependencyOwners || {}) };
   const readiness = { ...defaultUseCaseInputs.readiness, ...(input.readiness || {}) };
   const compare = economicSummary({ ...input, annualEvents, economics });
-  const economicPairs = [
-    [economics.baselineCostPerEventEur, economics.proposedCostPerEventEur],
-    [economics.baselineHoursPerEvent, economics.proposedHoursPerEvent],
-    [economics.baselineExceptionRatePct, economics.proposedExceptionRatePct],
-  ].filter(([base, proposed]) => safeNonNegative(base) !== null && safeNonNegative(proposed) !== null);
-  const modeledImprovement = economicPairs.some(([base, proposed]) => Number(proposed) < Number(base));
-  const hasEconomicComparison = economicPairs.length > 0;
+  const primaryInputs = economics.primaryObjective === 'cost' ? [economics.baselineCostPerEventEur, economics.proposedCostPerEventEur]
+    : economics.primaryObjective === 'time' ? [economics.baselineHoursPerEvent, economics.proposedHoursPerEvent]
+      : [economics.baselineExceptionRatePct, economics.proposedExceptionRatePct];
+  const primaryComparisonExists = safeNonNegative(primaryInputs[0]) !== null && safeNonNegative(primaryInputs[1]) !== null;
+  const primaryImprovement = compare.primaryObjectiveImproved === true;
   const sourceReady = input.baselineEvidenceSource.trim().length >= 3;
   const alternativesReady = input.existingSystemGap.trim().length >= 12 && altQuality === 'user-confirmed' && input.conventionalAlternative !== 'not-assessed';
-  const economicReady = hasEconomicComparison && modeledImprovement && evidenceQuality === 'user-confirmed' && economics.baselineQuality === 'user-confirmed' && economics.sourceNote.trim().length >= 12 && safeNonNegative(economics.oneTimeImplementationCostEur) !== null && safeNonNegative(economics.annualOperatingCostEur) !== null;
+  const tradeoffsReady = compare.materialDeteriorations.length === 0 || economics.acceptMaterialDeterioration;
+  const economicReady = primaryComparisonExists && primaryImprovement && tradeoffsReady && evidenceQuality === 'user-confirmed' && economics.baselineQuality === 'user-confirmed' && economics.sourceNote.trim().length >= 12 && safeNonNegative(economics.oneTimeImplementationCostEur) !== null && safeNonNegative(economics.annualOperatingCostEur) !== null;
+  const economicConsequence = !primaryComparisonExists ? `Provide current and proposed values for the selected primary objective (${economics.primaryObjective}).`
+    : !primaryImprovement ? `The selected primary objective (${economics.primaryObjective}) does not improve in the proposed case.`
+      : compare.materialDeteriorations.length && !economics.acceptMaterialDeterioration ? `Material deterioration exceeds tolerance: ${compare.materialDeteriorations.join(' ')} Explicitly accept the trade-off or revise the proposed case.`
+        : 'Enter a sourced baseline, proposed cost or time target, one-time implementation cost and annual operating cost. Proposed outcomes remain modeled hypotheses.';
   const gate = (id: DependencyId, ready: boolean, quality = dependencyEvidence[id]): Gate => ({
     id, label: dependencyLabels[id], status: ready && dependencyOwners[id].trim() ? 'READY' : 'OPEN',
     consequence: ready && dependencyOwners[id].trim() ? `Owner: ${dependencyOwners[id]}.` : !dependencyOwners[id].trim() ? `Assign an accountable owner. ${dependencyConsequences[id]}` : dependencyConsequences[id],
@@ -170,23 +198,23 @@ export function evaluateUseCase(input: UseCaseInputs): Decision {
     { id: 'scale', label: 'Multi-party workflow is in scope', status: annualEvents >= 1 && participants >= 2 ? 'READY' : 'OPEN', consequence: 'Confirm recurring workflow volume and at least two participating parties.', owner: dependencyOwners.owner, evidenceQuality: qualities(dependencyEvidence.owner) },
     { id: 'mechanism', label: 'Tokenisation-specific mechanism identified', status: input.tokenisationMechanisms.length ? 'READY' : 'OPEN', consequence: 'Name the shared-state, programmable-rights, conditional-settlement, lifecycle or entitlement mechanism needed.', owner: dependencyOwners.technology, evidenceQuality: qualities(dependencyEvidence.technology) },
     { id: 'alternative', label: 'Conventional alternative directly compared', status: alternativesReady ? 'READY' : 'OPEN', consequence: input.conventionalAlternative === 'adequate' ? 'The current database/API or conventional process appears adequate; document a material differentiator before proposing tokenisation.' : 'Compare the incumbent workflow and conventional database/API option against the specific requirement; identify evidence for the stated gap.', owner: dependencyOwners.technology, evidenceQuality: altQuality },
-    { id: 'economic', label: 'At least one measurable improvement is supported', status: economicReady ? 'READY' : 'OPEN', consequence: 'Enter a sourced baseline, proposed cost or time target, one-time implementation cost and annual operating cost. A lower target is a hypothesis until measured in a like-for-like pilot.', owner: dependencyOwners.owner, evidenceQuality: qualities(economics.baselineQuality) },
+    { id: 'economic', label: 'Primary objective and trade-offs are acceptable', status: economicReady ? 'READY' : 'OPEN', consequence: economicConsequence, owner: dependencyOwners.owner, evidenceQuality: qualities(economics.baselineQuality) },
     gate('authority', readiness.legalRegisterKnown), gate('rights', readiness.transferRulesDefined),
     ...(input.useCase === 'collateral' ? [gate('eligibility', readiness.collateralEligibilityKnown), gate('custody', readiness.custodyControlKnown), gate('technology', readiness.technologyBoundaryDefined)] : []),
     gate('cash', readiness.settlementRouteKnown), gate('owner', readiness.accountableOwner),
     gate('counterparty', readiness.pilotCounterpartyIdentified), gate('data', readiness.usableDataAvailable),
   ];
   const open = gates.filter(g => g.status === 'OPEN');
-  const noEconomicBenefit = hasEconomicComparison && !modeledImprovement && evidenceQuality === 'user-confirmed' && economics.baselineQuality === 'user-confirmed';
+  const noEconomicBenefit = primaryComparisonExists && !primaryImprovement && compare.improvements.length === 0 && evidenceQuality === 'user-confirmed' && economics.baselineQuality === 'user-confirmed';
   const conventionalAdequate = input.conventionalAlternative === 'adequate' && altQuality === 'user-confirmed';
   const noGoReason = !input.frictions.length ? 'No operational friction has been identified; there is no evidenced problem for tokenisation to solve.'
     : annualEvents < 1 || participants < 2 ? 'The workflow is not recurring and multi-party at the stated scale; conventional infrastructure should remain the default.'
       : conventionalAdequate ? 'The assessed conventional alternative appears adequate and no defensible tokenisation-specific advantage has been established.'
-        : noEconomicBenefit ? 'The sourced baseline and comparable proposed case show no improvement in the measured cost, time or exception outcomes.' : '';
+        : noEconomicBenefit ? `The sourced baseline and proposed case do not improve the selected primary objective (${economics.primaryObjective}).` : '';
   const verdict: Decision['verdict'] = noGoReason ? 'NO-GO' : open.length ? 'HOLD' : 'PILOT CANDIDATE';
   const reasonByGate = open.map(g => `${g.label}: ${g.consequence}`);
   const rationale = verdict === 'NO-GO' ? noGoReason
-    : verdict === 'PILOT CANDIDATE' ? 'The sourced baseline, compared alternative, modeled outcome and named dependency owners support a bounded pilot proposal. The proposed outcome remains to be measured; this is not production approval.'
+      : verdict === 'PILOT CANDIDATE' ? `The sourced baseline, compared alternative, modeled ${economics.primaryObjective} objective and named dependency owners support a bounded pilot proposal.${compare.materialDeteriorations.length ? ` Accepted material trade-offs: ${compare.materialDeteriorations.join(' ')}` : ''} Proposed outcomes remain to be measured; this is not production approval.`
       : `${open.length} decision gate(s) remain open. Resolve the named evidence, economic, legal, custody, cash, data and operating dependencies before recommending a pilot.`;
   const blueprints: Record<UseCase, { scope: string[]; architecture: string[]; measures: string[] }> = {
     'tokenised-bond': { scope: ['One instrument and one issuance event', 'Investor eligibility and allocation', 'Authoritative register update and position reconciliation', 'One servicing event; exclude open secondary trading initially'], architecture: ['Keep the legally authoritative register explicit; treat ledger records as representations until legal analysis establishes otherwise.', 'Use existing cash rails unless counterparties can access agreed tokenised money.', 'Model asset and cash legs as coordinated unless both share a demonstrated atomic settlement boundary.'], measures: ['Time from allocation to reconciled positions', 'Manual reconciliation hours and exception rate', 'Settlement completion time and unresolved breaks', 'Cost per issuance or servicing event'] },
@@ -213,7 +241,7 @@ export function evaluateUseCase(input: UseCaseInputs): Decision {
     ...(altQuality !== 'user-confirmed' ? ['Conventional alternative assessment is not user-confirmed.'] : []),
     ...gates.filter(g => g.status === 'READY' && g.evidenceQuality !== 'user-confirmed').map(g => `${g.label} is marked ready by the user but its evidence is ${g.evidenceQuality}.`),
   ];
-  const decisionDrivers = verdict === 'NO-GO' ? [noGoReason] : verdict === 'HOLD' ? reasonByGate : ['A traceable baseline and direct conventional alternative comparison are present.', 'At least one comparable cost, time or exception measure improves in the proposed case.', 'Minimum legal, collateral, custody, cash and technology dependencies have named owners.'];
+  const decisionDrivers = verdict === 'NO-GO' ? [noGoReason] : verdict === 'HOLD' ? [...reasonByGate, ...compare.deteriorations] : ['A traceable baseline and direct conventional alternative comparison are present.', `The selected primary objective (${economics.primaryObjective}) improves in the modeled case.`, ...(compare.deteriorations.length ? [`Material trade-offs explicitly accepted: ${compare.materialDeteriorations.join(' ')}`] : []), 'Minimum legal, collateral, custody, cash and technology dependencies have named owners.'];
   return { verdict, rationale: `${rationale}${mechanisms.length ? ` Selected mechanisms: ${mechanisms.join('; ')}.` : ''}`, gates, pilotScope: blueprints[input.useCase].scope, architecture: blueprints[input.useCase].architecture, successMeasures: blueprints[input.useCase].measures, nextActions, decisionDrivers, economicSummary: compare, failureScenarios, assumptions };
 }
 
@@ -221,7 +249,8 @@ export function simulateSingleGateChange(input: UseCaseInputs, gateId: string): 
   return simulateSingleGate(input, gateId).verdict;
 }
 
-export function simulateSingleGate(input: UseCaseInputs, gateId: string): { verdict: Decision['verdict']; remainingOpenGates: string[] } {
+export const SENSITIVITY_HYPOTHESIS_LABEL = 'Hypothetical result assuming the selected evidence gate is satisfied. No evidence has been independently verified or upgraded.';
+export function simulateSingleGate(input: UseCaseInputs, gateId: string): { verdict: Decision['verdict']; remainingOpenGates: string[]; hypothetical: true; label: string } {
   const copy: UseCaseInputs = structuredClone(input);
   switch (gateId) {
     case 'problem': copy.frictions = ['reconciliation']; break;
@@ -252,11 +281,11 @@ export function simulateSingleGate(input: UseCaseInputs, gateId: string): { verd
     case 'data': copy.readiness.usableDataAvailable = true; break;
     default: {
       const unchanged = evaluateUseCase(input);
-      return { verdict: unchanged.verdict, remainingOpenGates: unchanged.gates.filter(g => g.status === 'OPEN').map(g => g.label) };
+      return { verdict: unchanged.verdict, remainingOpenGates: unchanged.gates.filter(g => g.status === 'OPEN').map(g => g.label), hypothetical: true, label: SENSITIVITY_HYPOTHESIS_LABEL };
     }
   }
   const result = evaluateUseCase(copy);
-  return { verdict: result.verdict, remainingOpenGates: result.gates.filter(g => g.status === 'OPEN').map(g => g.label) };
+  return { verdict: result.verdict, remainingOpenGates: result.gates.filter(g => g.status === 'OPEN').map(g => g.label), hypothetical: true, label: SENSITIVITY_HYPOTHESIS_LABEL };
 }
 
 function economicValuesExist(e: EconomicCase): boolean {

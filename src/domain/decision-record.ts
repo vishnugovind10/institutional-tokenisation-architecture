@@ -1,6 +1,6 @@
 import { DECISION_ENGINE_VERSION, type Decision, type UseCaseInputs } from './use-case-decision';
 export type DecisionRecord = {
-  schemaVersion: '2.0'; engineVersion: string; version: number; generatedAt: string; title: string;
+  schemaVersion: '2.1'; engineVersion: string; version: number; generatedAt: string; title: string;
   workflow: string; verdict: Decision['verdict']; rationale: string; inputs: UseCaseInputs; decision: Decision;
   architecture: { proposedModel: string[]; systemOfRecord: { domain: string; authoritativeRecord: string; owner: string }[] };
   dependencies: Decision['gates']; evidenceRegister: { item: string; quality: string; source: string; owner: string }[];
@@ -29,7 +29,7 @@ export function createDecisionRecord(args: { title: string; version: number; inp
     ...decision.gates.filter(g => !['problem','evidence','scale','mechanism','alternative','economic'].includes(g.id)).map(g => ({ item: g.label, quality: g.evidenceQuality, source: g.status === 'READY' ? 'User-marked ready; not independently verified' : 'Missing or unresolved', owner: g.owner })),
   ];
   return {
-    schemaVersion: '2.0', engineVersion: DECISION_ENGINE_VERSION, version: Math.max(1, Math.floor(args.version)), generatedAt: args.at || new Date().toISOString(),
+    schemaVersion: '2.1', engineVersion: DECISION_ENGINE_VERSION, version: Math.max(1, Math.floor(args.version)), generatedAt: args.at || new Date().toISOString(),
     title: args.title.trim() || 'Collateral allocation and settlement assessment', workflow: inputs.useCase, verdict: decision.verdict, rationale: decision.rationale,
     inputs: structuredClone(inputs), decision: structuredClone(decision),
     architecture: { proposedModel: decision.architecture, systemOfRecord }, dependencies: decision.gates,
@@ -51,7 +51,7 @@ export function decisionRecordMarkdown(record: DecisionRecord): string {
       ['Cost per event (€)', String(record.inputs.economics.baselineCostPerEventEur ?? 'Missing'), String(record.inputs.economics.proposedCostPerEventEur ?? 'Missing'), economics.annualCostSavingEur === null ? 'Not quantified' : `€${economics.annualCostSavingEur.toFixed(2)} / year`, record.inputs.economics.proposedQuality],
       ['Hours per event', String(record.inputs.economics.baselineHoursPerEvent ?? 'Missing'), String(record.inputs.economics.proposedHoursPerEvent ?? 'Missing'), economics.annualHoursSaved === null ? 'Not quantified' : `${economics.annualHoursSaved.toFixed(2)} hours / year`, record.inputs.economics.proposedQuality],
       ['Exception rate (%)', String(record.inputs.economics.baselineExceptionRatePct ?? 'Missing'), String(record.inputs.economics.proposedExceptionRatePct ?? 'Missing'), economics.annualExceptionsAvoided === null ? 'Not quantified' : `${economics.annualExceptionsAvoided.toFixed(2)} / year`, record.inputs.economics.proposedQuality],
-    ]), '', `One-time implementation cost: €${record.inputs.economics.oneTimeImplementationCostEur ?? 'Not supplied'} · Annual operating cost: €${record.inputs.economics.annualOperatingCostEur ?? 'Not supplied'} · Net first year: ${economics.netFirstYearEur === null ? 'Not quantified' : `€${economics.netFirstYearEur.toFixed(2)}`} · Net recurring: ${economics.netRecurringEur === null ? 'Not quantified' : `€${economics.netRecurringEur.toFixed(2)}`}.`, '', economics.note, '',
+    ]), '', `Primary objective: ${economics.primaryObjective} · Improvement: ${economics.primaryObjectiveImproved === null ? 'not quantified' : economics.primaryObjectiveImproved ? 'modeled' : 'not modeled'} · Material deterioration accepted: ${economics.tradeoffAccepted ? 'yes' : 'no'}.`, '', 'Modeled improvements:', ...(economics.improvements.length ? economics.improvements.map(item => `- ${item}`) : ['- None quantified.']), '', 'Modeled deteriorations:', ...(economics.deteriorations.length ? economics.deteriorations.map(item => `- ${item}`) : ['- None quantified.']), '', `One-time implementation cost: €${record.inputs.economics.oneTimeImplementationCostEur ?? 'Not supplied'} · Annual operating cost: €${record.inputs.economics.annualOperatingCostEur ?? 'Not supplied'} · Net first year: ${economics.netFirstYearEur === null ? 'Not quantified' : `€${economics.netFirstYearEur.toFixed(2)}`} · Net recurring: ${economics.netRecurringEur === null ? 'Not quantified' : `€${economics.netRecurringEur.toFixed(2)}`}.`, '', economics.note, '',
     '## Proposed architecture and system of record', '', ...record.architecture.proposedModel.map(x => `- ${x}`), '', table(['Domain','Authoritative record','Owner'], record.architecture.systemOfRecord.map(x => [x.domain,x.authoritativeRecord,x.owner])), '',
     '## Dependencies and evidence quality', '', table(['Dependency','Status','Evidence quality','Owner','What remains'], record.dependencies.map(g => [g.label,g.status,g.evidenceQuality,g.owner,g.status === 'OPEN' ? g.consequence : '']),), '',
     '## Failure scenarios', '', ...record.decision.failureScenarios.map(s => `- **${s.name}:** ${s.expected}`), '',

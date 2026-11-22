@@ -21,6 +21,9 @@ describe('portable decision record', () => {
     const markdown = decisionRecordMarkdown(record);
     expect(markdown).toContain('## Executive recommendation');
     expect(markdown).toContain('## Dependencies and evidence quality');
+    expect(markdown).toContain('Primary objective: cost');
+    expect(markdown).toContain('Modeled improvements:');
+    expect(markdown).toContain('Material deterioration accepted: no');
     expect(markdown).toContain('Net first year');
     expect(markdown).toContain('not independently verified');
   });

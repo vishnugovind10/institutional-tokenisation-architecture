@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { defaultUseCaseInputs, evaluateUseCase, simulateSingleGateChange, type DependencyId, type UseCaseInputs } from './use-case-decision';
+import { defaultUseCaseInputs, evaluateUseCase, simulateSingleGate, simulateSingleGateChange, SENSITIVITY_HYPOTHESIS_LABEL, type DependencyId, type UseCaseInputs } from './use-case-decision';
 
 const ready: UseCaseInputs = {
   ...defaultUseCaseInputs,
@@ -73,7 +73,7 @@ describe('use-case decision logic', () => {
     expect(result.economicSummary.annualHoursSaved).toBe(300);
     expect(result.economicSummary.netFirstYearEur).toBe(4_500);
     expect(result.economicSummary.netRecurringEur).toBe(14_500);
-    expect(result.economicSummary.note).toContain('not realised savings');
+    expect(result.economicSummary.note).toContain('not measured outcomes');
   });
   it('shows one-gate sensitivity without mutating original inputs', () => {
     const held = { ...ready, readiness: { ...ready.readiness, custodyControlKnown: false } };
@@ -85,5 +85,38 @@ describe('use-case decision logic', () => {
     const noCosts = { ...ready, economics: { ...ready.economics, oneTimeImplementationCostEur: null, annualOperatingCostEur: null } };
     expect(simulateSingleGateChange(noCosts, 'economic')).toBe('HOLD');
     expect(noCosts.economics.oneTimeImplementationCostEur).toBeNull();
+  });
+  it('requires the selected primary objective to improve, even when another metric improves', () => {
+    const result = evaluateUseCase({ ...ready, economics: { ...ready.economics, primaryObjective: 'time', proposedHoursPerEvent: 7.8 } });
+    expect(result.economicSummary.improvements.some(item => item.includes('Cost / event'))).toBe(true);
+    expect(result.economicSummary.deteriorations.some(item => item.includes('Hours / event'))).toBe(true);
+    expect(result.gates.find(g => g.id === 'economic')?.status).toBe('OPEN');
+    expect(result.verdict).toBe('HOLD');
+  });
+  it('keeps material deteriorations open until explicitly accepted and reports them after acceptance', () => {
+    const tradeoff = { ...ready.economics, proposedCostPerEventEur: 378, proposedHoursPerEvent: 7.8, proposedExceptionRatePct: 16 };
+    const held = evaluateUseCase({ ...ready, economics: tradeoff });
+    expect(held.economicSummary.primaryObjectiveImproved).toBe(true);
+    expect(held.economicSummary.materialDeteriorations).toHaveLength(2);
+    expect(held.economicSummary.tradeoffAccepted).toBe(false);
+    expect(held.gates.find(g => g.id === 'economic')?.status).toBe('OPEN');
+    const accepted = evaluateUseCase({ ...ready, economics: { ...tradeoff, acceptMaterialDeterioration: true } });
+    expect(accepted.verdict).toBe('PILOT CANDIDATE');
+    expect(accepted.rationale).toContain('Accepted material trade-offs');
+    expect(accepted.decisionDrivers.some(item => item.includes('explicitly accepted'))).toBe(true);
+  });
+  it('applies configurable deterioration tolerance thresholds', () => {
+    const result = evaluateUseCase({ ...ready, economics: { ...ready.economics, proposedCostPerEventEur: 400, proposedHoursPerEvent: 6.3, proposedExceptionRatePct: 8.5, timeDeteriorationTolerancePct: 10, exceptionDeteriorationTolerancePct: 10 } });
+    expect(result.economicSummary.deteriorations).toHaveLength(2);
+    expect(result.economicSummary.materialDeteriorations).toHaveLength(0);
+    expect(result.gates.find(g => g.id === 'economic')?.status).toBe('READY');
+  });
+  it('labels one-gate sensitivity as hypothetical and does not mutate assessed evidence', () => {
+    const held = { ...ready, baselineEvidenceQuality: 'assumption' as const, readiness: { ...ready.readiness, custodyControlKnown: false } };
+    const result = simulateSingleGate(held, 'custody');
+    expect(result.hypothetical).toBe(true);
+    expect(result.label).toBe(SENSITIVITY_HYPOTHESIS_LABEL);
+    expect(result.label).toContain('No evidence has been independently verified or upgraded.');
+    expect(held.baselineEvidenceQuality).toBe('assumption');
   });
 });
