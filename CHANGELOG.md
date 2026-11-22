@@ -3,7 +3,7 @@
 ## Unreleased — Use-case decision studio
 
 - Added an interactive workflow-level decision aid for tokenised bonds, fund units, private-credit participations and collateral allocation.
-- Added explicit NO-GO, HOLD and PILOT CANDIDATE outcomes with business, evidence, scale, legal, transfer, settlement, ownership, counterparty and data gates.
+- Added explicit NO-GO, HOLD and PILOT CANDIDATE outcomes with business, evidence, tokenisation-mechanism, alternative-comparison, scale, legal, transfer, settlement, ownership, counterparty and data gates.
 - Added use-case-specific pilot boundaries, architecture principles and measurable success criteria.
 - Added browser-local persistence and JSON / Markdown decision exports, plus deterministic unit tests and methodology documentation.
 
