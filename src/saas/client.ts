@@ -1,7 +1,7 @@
 export type AuthUser = { id: string; email?: string; user_metadata?: Record<string, unknown> };
 export type AuthSession = { access_token: string; refresh_token: string; expires_at: number; user: AuthUser };
 export type Organization = { id: string; name: string; slug: string; role: 'owner'|'admin'|'editor'|'reviewer'|'viewer' };
-export type CloudAssessment = { id: string; title: string; use_case: string; status: string; inputs: Record<string, unknown>; decision: Record<string, unknown>; engine_version: string; version: number; created_at: string; updated_at: string };
+export type CloudAssessment = { id: string; title: string; use_case: string; status: string; inputs: Record<string, unknown>; decision: Record<string, unknown>; engine_version: string; version: number; created_at: string; updated_at: string; created_by:string; updated_by:string };
 export type AuditEvent = { id: string; entity_type: string; entity_id: string; action: string; payload: Record<string, unknown>; created_at: string; actor_id: string|null };
 const env = import.meta.env as Record<string, string|boolean|undefined>;
 export const saasConfig = {
@@ -44,7 +44,7 @@ export async function getOrganizations(token:string):Promise<Organization[]>{
  return rows.filter(x=>x.organization).map(x=>({...x.organization,role:x.role}));
 }
 export async function listAssessments(token:string,organizationId:string):Promise<CloudAssessment[]>{
- return request<CloudAssessment[]>('/rest/v1/assessments?select=id,title,use_case,status,inputs,decision,engine_version,version,created_at,updated_at&organization_id=eq.'+encodeURIComponent(organizationId)+'&order=updated_at.desc',token);
+ return request<CloudAssessment[]>('/rest/v1/assessments?select=id,title,use_case,status,inputs,decision,engine_version,version,created_at,updated_at,created_by,updated_by&organization_id=eq.'+encodeURIComponent(organizationId)+'&order=updated_at.desc',token);
 }
 export async function listAuditEvents(token:string,organizationId:string):Promise<AuditEvent[]>{
  return request<AuditEvent[]>('/rest/v1/audit_events?select=id,entity_type,entity_id,action,payload,created_at,actor_id&organization_id=eq.'+encodeURIComponent(organizationId)+'&order=created_at.desc&limit=100',token);
