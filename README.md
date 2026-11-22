@@ -2,16 +2,17 @@
 
 ![CI](https://github.com/vishnugovind10/institutional-tokenisation-architecture/actions/workflows/ci.yml/badge.svg?branch=main) [![Release](https://img.shields.io/github/v/release/vishnugovind10/institutional-tokenisation-architecture)](https://github.com/vishnugovind10/institutional-tokenisation-architecture/releases) [![License](https://img.shields.io/github/license/vishnugovind10/institutional-tokenisation-architecture)](LICENSE) [![Project website](https://img.shields.io/badge/Workbench-live-126b62)](https://institutional-tokenisation-architec.vercel.app)
 
-A versioned institutional architecture workbench for tokenised securities, digital money, custody, settlement, reconciliation and assurance.
+A versioned institutional architecture workbench and tenant-scoped decision workspace for tokenised securities, digital money, custody, settlement, reconciliation and assurance.
 
 **Live workbench:** [institutional-tokenisation-architec.vercel.app](https://institutional-tokenisation-architec.vercel.app) · **Current version:** 0.2.0
 
-> This is a reference architecture and deterministic simulator using synthetic data. It is not a production banking platform, legal opinion, compliance product, regulated settlement venue or institutional deployment. The workbench has no live ledger, custody, payment or network connection. Related portfolio projects are conceptual references, not tested integrations or shared runtime.
+> This is a reference architecture and deterministic simulator using synthetic data. It is not a production banking platform, legal opinion, compliance product, regulated settlement venue or institutional deployment. The workbench has no live ledger, custody, payment or network connection. The SaaS foundation provides organisation-scoped assessment records, server-side deterministic decision evaluation, independent review and audit events, but does not qualify as a production-hardened institutional service. Related portfolio projects are conceptual references, not tested integrations or shared runtime.
 
 ## Contents
 
 - [Workbench](#workbench)
 - [Use-case decision](#use-case-decision)
+- [Institutional SaaS mode](#institutional-saas-mode)
 - [Run locally](#run-locally)
 - [Verify changes](#verify-changes)
 - [Model boundaries](#model-boundaries)
@@ -37,6 +38,12 @@ Start with the workflow rather than the ledger. The decision studio captures the
 - **PILOT CANDIDATE:** the stated problem, baseline and minimum prerequisites support a bounded pilot proposal.
 
 The result is not a composite score, legal opinion or production approval. User-entered readiness is not independently verified. A pilot candidate must identify a tokenisation-specific mechanism and explain why a conventional database/API alternative is insufficient. Pilot templates are platform-neutral and explicitly distinguish authoritative legal records from DLT representations. See [decision method and gate definitions](docs/use-case-decision-method.md).
+
+## Institutional SaaS mode
+
+The optional SaaS mode adds Supabase authentication, organisation tenancy, owner/admin/editor/reviewer/viewer roles, organisation-scoped assessment persistence, database-generated audit events and email invitations. The local synthetic demo remains the default until SaaS mode is explicitly enabled and configured. See [SaaS architecture, security boundary and deployment instructions](docs/saas-architecture.md).
+
+This is an implementation foundation, not a claim of production security certification or regulatory compliance. Do not store confidential or regulated customer data until the deployment and independent-review requirements in [SECURITY.md](SECURITY.md) are complete.
 
 ## Run locally
 
