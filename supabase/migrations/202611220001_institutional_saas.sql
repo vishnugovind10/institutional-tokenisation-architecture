@@ -65,7 +65,7 @@ declare v_slug text;
 begin
   if auth.uid() is null then raise exception 'Authentication required'; end if;
   if char_length(trim(p_name)) not between 2 and 80 then raise exception 'Organisation name must be 2–80 characters'; end if;
-  v_slug:=trim(both '-' from regexp_replace(lower(trim(p_name)),'[^a-z0-9]+','-','g'))||'-'||substr(encode(gen_random_bytes(4),'hex'),1,8);
+  v_slug:=trim(both '-' from regexp_replace(lower(trim(p_name)),'[^a-z0-9]+','-','g'))||'-'||substr(replace(gen_random_uuid()::text,'-',''),1,8);
   insert into public.organizations(name,slug,created_by) values(trim(p_name),v_slug,auth.uid()) returning * into v_org;
   insert into public.organization_memberships(organization_id,user_id,role) values(v_org.id,auth.uid(),'owner');
   return jsonb_build_object('organization_id',v_org.id,'name',v_org.name,'slug',v_org.slug);
