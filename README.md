@@ -30,13 +30,13 @@ A versioned institutional architecture workbench for tokenised securities, digit
 
 ## Use-case decision
 
-Start with the workflow rather than the ledger. The decision studio captures the operational problem, annual workflow volume, participating parties, baseline evidence and minimum legal, settlement, operating-owner, counterparty and data prerequisites. It returns one of three outcomes:
+Start with the workflow rather than the ledger. The decision studio captures the operational problem, annual workflow volume, participating parties, baseline evidence, the proposed tokenisation mechanism, why simpler alternatives are insufficient and minimum legal, settlement, operating-owner, counterparty and data prerequisites. It returns one of three outcomes:
 
 - **NO-GO:** no operational problem has been identified.
 - **HOLD:** a problem exists, but evidence or one or more prerequisites are missing.
 - **PILOT CANDIDATE:** the stated problem, baseline and minimum prerequisites support a bounded pilot proposal.
 
-The result is not a composite score, legal opinion or production approval. User-entered readiness is not independently verified. Pilot templates are platform-neutral and explicitly distinguish authoritative legal records from DLT representations. See [decision method and gate definitions](docs/use-case-decision-method.md).
+The result is not a composite score, legal opinion or production approval. User-entered readiness is not independently verified. A pilot candidate must identify a tokenisation-specific mechanism and explain why a conventional database/API alternative is insufficient. Pilot templates are platform-neutral and explicitly distinguish authoritative legal records from DLT representations. See [decision method and gate definitions](docs/use-case-decision-method.md).
 
 ## Run locally
 
