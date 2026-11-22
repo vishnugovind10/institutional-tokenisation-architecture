@@ -15,9 +15,9 @@ function validInputs(value:unknown):value is UseCaseInputs{
  if(!value||typeof value!=='object')return false;
  const x=value as Record<string,unknown>,r=x.readiness as Record<string,unknown>;
  return useCases.includes(String(x.useCase))&&typeof x.annualEvents==='number'&&Number.isFinite(x.annualEvents)&&x.annualEvents>=0&&typeof x.participants==='number'&&Number.isFinite(x.participants)&&x.participants>=0
-  &&Array.isArray(x.frictions)&&x.frictions.every(v=>frictions.includes(String(v)))
-  &&Array.isArray(x.tokenisationMechanisms)&&x.tokenisationMechanisms.every(v=>mechanisms.includes(String(v)))
-  &&typeof x.baselineEvidence==='string'&&typeof x.existingSystemGap==='string'
+  &&Array.isArray(x.frictions)&&x.frictions.length<=6&&x.frictions.every(v=>frictions.includes(String(v)))
+  &&Array.isArray(x.tokenisationMechanisms)&&x.tokenisationMechanisms.length<=5&&x.tokenisationMechanisms.every(v=>mechanisms.includes(String(v)))
+  &&typeof x.baselineEvidence==='string'&&x.baselineEvidence.length<=5000&&typeof x.existingSystemGap==='string'&&x.existingSystemGap.length<=5000
   &&!!r&&['legalRegisterKnown','transferRulesDefined','settlementRouteKnown','accountableOwner','pilotCounterpartyIdentified','usableDataAvailable'].every(k=>typeof r[k]==='boolean');
 }
 Deno.serve(async(req)=>{
