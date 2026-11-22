@@ -18,7 +18,7 @@ The SaaS edition turns the local decision workbench into an organisation-scoped 
 
 `User -> Supabase Auth -> JWT -> RLS-protected PostgREST/RPC -> PostgreSQL`
 
-The browser uses only the publishable/anon key. Tenant isolation is enforced by database policies, not by hiding UI controls. A user cannot gain access to another tenant by changing an organisation ID in a request. The invitation Edge Function validates the caller JWT and checks the caller's owner/admin membership using the service role held only in the function environment.
+The browser uses only the publishable/anon key. Browser-local architecture drafts are namespaced by organisation and user; SaaS decision assessments are persisted in the tenant database rather than the public demo's shared local draft key. Tenant isolation is enforced by database policies, not by hiding UI controls. A user cannot gain access to another tenant by changing an organisation ID in a request. The invitation Edge Function validates the caller JWT and checks the caller's owner/admin membership using the service role held only in the function environment.
 
 ## First-release scope
 
