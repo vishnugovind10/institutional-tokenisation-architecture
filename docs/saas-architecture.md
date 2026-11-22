@@ -7,10 +7,11 @@ The SaaS edition turns the local decision workbench into an organisation-scoped 
 ## Runtime
 
 - **Web client:** existing React/Vite application.
-- **Identity and data plane:** Supabase Auth and PostgreSQL.
+- **Identity and data plane:** Supabase Auth, PostgreSQL and server-side Supabase Edge Functions.
+- **Decision engine:** one shared deterministic TypeScript module is imported by the browser for preview and by the server save function for authoritative recomputation.
 - **Tenant boundary:** organisation membership plus PostgreSQL Row Level Security on every tenant-owned table.
 - **Roles:** owner, admin, editor, reviewer and viewer. Only owner/admin/editor can create or update assessments.
-- **Decision record:** title, use case, complete input snapshot, decision snapshot, engine version, record version, author/updater identity and timestamps.
+- **Decision record:** title, use case, complete input snapshot, server-computed decision snapshot, engine version, record version, author/updater identity and timestamps.
 - **Review workflow:** draft → in review → approved/rejected. Only an independent owner/admin/reviewer can approve or reject; the submitter cannot review their own assessment. Review comments and actions are retained.
 - **Audit:** database trigger writes a snapshot event on every assessment create/update and invited-member provisioning; application roles cannot update/delete audit events. The workbench displays the latest 100 tenant events.
 - **Hosting:** Vercel static frontend; Supabase is a separately provisioned managed backend.
@@ -27,8 +28,9 @@ The browser uses only the publishable/anon key. Browser-local architecture draft
 2. First-user organisation creation.
 3. Organisation selector for memberships already provisioned in Supabase.
 4. Tenant-isolated assessment persistence and database-side audit events.
-5. Deterministic decision snapshot versioning.
+5. Deterministic decision snapshot versioning, recomputed server-side on every save.
 6. Owner/admin email invitations through a Supabase Edge Function; membership is attached when the invited identity is created.
+7. Server-side decision recomputation before persistence; browser clients cannot write assessment rows directly.
 7. Segregated assessment review with mandatory rationale and database-side author/reviewer separation.
 6. Read-only roles for reviewer/viewer.
 
