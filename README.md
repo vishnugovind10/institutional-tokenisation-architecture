@@ -6,7 +6,7 @@ A versioned institutional architecture workbench and tenant-scoped decision work
 
 **Live workbench:** [institutional-tokenisation-architec.vercel.app](https://institutional-tokenisation-architec.vercel.app) · **Current version:** 0.2.0
 
-> This is a reference architecture and deterministic simulator using synthetic data. It is not a production banking platform, legal opinion, compliance product, regulated settlement venue or institutional deployment. The workbench has no live ledger, custody, payment or network connection. The SaaS foundation provides organisation-scoped assessment records and audit events, but does not yet independently verify decision outputs or qualify as a production-hardened institutional service. Related portfolio projects are conceptual references, not tested integrations or shared runtime.
+> This is a reference architecture and deterministic simulator using synthetic data. It is not a production banking platform, legal opinion, compliance product, regulated settlement venue or institutional deployment. The workbench has no live ledger, custody, payment or network connection. The SaaS foundation provides organisation-scoped assessment records, server-side deterministic decision evaluation, independent review and audit events, but does not qualify as a production-hardened institutional service. Related portfolio projects are conceptual references, not tested integrations or shared runtime.
 
 ## Contents
 
