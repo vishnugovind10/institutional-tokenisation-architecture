@@ -14,7 +14,7 @@ Returned when no operational friction has been selected. A token representation 
 
 ### HOLD
 
-Returned when a problem is selected but the baseline evidence is missing, the workflow is not multi-party, or one or more minimum prerequisites remain open. The output explains what must be established.
+Returned when a problem is selected but the baseline evidence is missing, no tokenisation-specific mechanism is identified, a simpler database/API alternative has not been assessed, the workflow is not multi-party, or one or more minimum prerequisites remain open. The output explains what must be established.
 
 ### PILOT CANDIDATE
 
@@ -26,6 +26,8 @@ Returned only when the workflow problem and baseline are stated, at least one an
 |---|---|---|
 | Operational problem | One or more concrete workflow frictions selected | Avoids technology-first tokenisation |
 | Baseline evidence | At least 12 characters of user-entered evidence | Requires an attributable starting point; not independently verified |
+| Tokenisation mechanism | At least one specific shared-state, programmable-rights, conditional-settlement, lifecycle-automation or portable-entitlement mechanism selected | Forces the user to state what tokenisation actually enables |
+| Alternative comparison | A written explanation of why a conventional database, APIs and workflow controls are insufficient | Avoids assuming that DLT is necessary just because multiple parties are involved |
 | Workflow scale | At least one event per year and two parties | Establishes a multi-party process rather than a single-user record |
 | Legal authority | Authoritative legal register identified | Separates legal ownership from technical representation |
 | Transfer rules | Transfer restrictions, eligibility and consent rules documented | Determines who may hold or receive the asset and when rights change |
