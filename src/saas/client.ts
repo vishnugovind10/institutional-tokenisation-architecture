@@ -19,7 +19,7 @@ function writeSession(session: AuthSession|null) {
 }
 async function request<T>(path:string,token?:string,body?:unknown,method='GET',extra:Record<string,string>={}):Promise<T>{
   const response=await fetch(saasConfig.url+path,{method,headers:{apikey:saasConfig.anonKey,'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{}),...extra},...(body===undefined?{}:{body:JSON.stringify(body)})});
-  const raw=await response.text();let data:unknown;try{data=raw?JSON.parse(raw):null;}catch{data=raw;}
+  const data:unknown=await response.json().catch(()=>null);
   if(!response.ok){const message=typeof data==='object'&&data&&'message'in data?String((data as {message:unknown}).message):typeof data==='object'&&data&&'msg'in data?String((data as {msg:unknown}).msg):'Request failed ('+response.status+')';throw new Error(message);}
   return data as T;
 }
@@ -56,7 +56,7 @@ export function persistSession(session:AuthSession|null){writeSession(session);}
 
 export async function inviteOrganizationMember(token:string,organizationId:string,email:string,role:'admin'|'editor'|'reviewer'|'viewer'){
  const response=await fetch(saasConfig.url+'/functions/v1/invite-member',{method:'POST',headers:{apikey:saasConfig.anonKey,Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({organization_id:organizationId,email,role})});
- const raw=await response.text();let data:unknown;try{data=raw?JSON.parse(raw):null;}catch{data=raw;}
+ const data:unknown=await response.json().catch(()=>null);
  if(!response.ok){const message=typeof data==='object'&&data&&'error'in data?String((data as {error:unknown}).error):'Invitation failed ('+response.status+')';throw new Error(message);}
  return data as {invited:boolean;user_id:string;email:string;role:string};
 }
