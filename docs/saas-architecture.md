@@ -18,7 +18,7 @@ The SaaS edition turns the local decision workbench into an organisation-scoped 
 
 ## Request path
 
-`User -> Supabase Auth -> JWT -> RLS-protected PostgREST/RPC -> PostgreSQL`
+`User -> Supabase Auth -> JWT -> Edge Function (role check + deterministic recompute) -> PostgreSQL`
 
 The browser uses only the publishable/anon key. Browser-local architecture drafts are namespaced by organisation and user; SaaS decision assessments are persisted in the tenant database rather than the public demo's shared local draft key. Tenant isolation is enforced by database policies, not by hiding UI controls. A user cannot gain access to another tenant by changing an organisation ID in a request. The invitation Edge Function validates the caller JWT and checks the caller's owner/admin membership using the service role held only in the function environment.
 
@@ -32,7 +32,7 @@ The browser uses only the publishable/anon key. Browser-local architecture draft
 6. Owner/admin email invitations through a Supabase Edge Function; membership is attached when the invited identity is created.
 7. Server-side decision recomputation before persistence; browser clients cannot write assessment rows directly.
 7. Segregated assessment review with mandatory rationale and database-side author/reviewer separation.
-6. Read-only roles for reviewer/viewer.
+8. Read-only roles for reviewer/viewer.
 
 ## Required before a paid institutional deployment
 
@@ -55,10 +55,11 @@ The browser uses only the publishable/anon key. Browser-local architecture draft
    - `VITE_SUPABASE_ANON_KEY=<publishable-or-anon-key>`
 4. Configure Auth site URL, allowed redirect URLs and email templates for the production domain.
 5. Set the Edge Function secret `APP_ORIGIN` to the production application origin; keep the service-role key in Supabase function secrets only.
-6. Deploy the invitation function: `supabase functions deploy invite-member`.
-7. Redeploy the Vercel application.
-8. Register an account, confirm the email and create the first organisation.
-9. Invite additional users from the organisation bar. The invitation creates a membership after the invitee's Auth identity is provisioned. Do not grant browser clients service-role access.
+6. Deploy the assessment function: `supabase functions deploy save-assessment`.
+7. Deploy the invitation function: `supabase functions deploy invite-member`.
+8. Redeploy the Vercel application.
+9. Register an account, confirm the email and create the first organisation.
+10. Invite additional users from the organisation bar. The invitation creates a membership after the invitee's Auth identity is provisioned. Do not grant browser clients service-role access.
 
 ## Demo and SaaS modes
 
