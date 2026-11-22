@@ -1,5 +1,6 @@
 export type UseCase = 'tokenised-bond' | 'fund-units' | 'private-credit' | 'collateral';
 export type Friction = 'reconciliation' | 'settlement-delay' | 'fragmented-register' | 'servicing-cost' | 'distribution-friction' | 'manual-eligibility';
+export type TokenisationMechanism = 'shared-state' | 'programmable-rights' | 'conditional-settlement' | 'lifecycle-automation' | 'portable-entitlements';
 export type Readiness = {
   legalRegisterKnown: boolean;
   transferRulesDefined: boolean;
@@ -14,6 +15,8 @@ export type UseCaseInputs = {
   participants: number;
   frictions: Friction[];
   baselineEvidence: string;
+  tokenisationMechanisms: TokenisationMechanism[];
+  existingSystemGap: string;
   readiness: Readiness;
 };
 export type Gate = { id: string; label: string; status: 'READY' | 'OPEN'; consequence: string };
@@ -32,6 +35,8 @@ export const defaultUseCaseInputs: UseCaseInputs = {
   participants: 8,
   frictions: ['reconciliation', 'settlement-delay', 'servicing-cost'],
   baselineEvidence: '',
+  tokenisationMechanisms: [],
+  existingSystemGap: '',
   readiness: {
     legalRegisterKnown: true,
     transferRulesDefined: false,
@@ -41,6 +46,13 @@ export const defaultUseCaseInputs: UseCaseInputs = {
     usableDataAvailable: true,
   },
 };
+export const mechanismOptions: [TokenisationMechanism, string][] = [
+  ['shared-state', 'Multiple parties need a shared, consistently updated position or ownership state'],
+  ['programmable-rights', 'Transfer eligibility, consent or restrictions must travel with the asset representation'],
+  ['conditional-settlement', 'Asset and cash actions need coordinated, conditional execution across participants'],
+  ['lifecycle-automation', 'Servicing or entitlement rules need to execute consistently across participating systems'],
+  ['portable-entitlements', 'Participants need portable, verifiable representations of claims or entitlements'],
+];
 const frictionLabels: Record<Friction, string> = {
   reconciliation: 'Manual or delayed reconciliation',
   'settlement-delay': 'Slow or uncertain settlement',
@@ -53,6 +65,8 @@ export function evaluateUseCase(input: UseCaseInputs): Decision {
   const gates: Gate[] = [
     { id: 'problem', label: 'Operational problem identified', status: input.frictions.length > 0 ? 'READY' : 'OPEN', consequence: 'A token is not a business case. Identify a recurring or material workflow failure before selecting technology.' },
     { id: 'evidence', label: 'Baseline evidence captured', status: input.baselineEvidence.trim().length >= 12 ? 'READY' : 'OPEN', consequence: 'Capture current processing time, exception rate, reconciliation effort, cost or settlement failure evidence.' },
+    { id: 'mechanism', label: 'Tokenisation-specific mechanism identified', status: input.tokenisationMechanisms.length > 0 ? 'READY' : 'OPEN', consequence: 'Identify the specific shared-state, programmable-rights, conditional-settlement, lifecycle-automation or portable-entitlement mechanism that is needed. A token is not a value proposition by itself.' },
+    { id: 'alternative', label: 'Simpler alternatives considered', status: input.existingSystemGap.trim().length >= 12 ? 'READY' : 'OPEN', consequence: 'Explain why an authoritative database, APIs and conventional workflow controls do not adequately solve the stated problem.' },
     { id: 'authority', label: 'Authoritative legal register identified', status: input.readiness.legalRegisterKnown ? 'READY' : 'OPEN', consequence: 'Name the authoritative record of legal ownership and the party empowered to update it.' },
     { id: 'rights', label: 'Transfer and eligibility rules defined', status: input.readiness.transferRulesDefined ? 'READY' : 'OPEN', consequence: 'Document transfer restrictions, investor eligibility, consent requirements and the legally effective transfer event.' },
     { id: 'cash', label: 'Cash settlement route identified', status: input.readiness.settlementRouteKnown ? 'READY' : 'OPEN', consequence: 'Specify the cash instrument, payment operator, operating hours, cut-offs and failure/recovery path. Do not assume tokenised cash.' },
@@ -77,7 +91,7 @@ export function evaluateUseCase(input: UseCaseInputs): Decision {
     rationale = `The use case has a stated problem and baseline, but ${open.length} decision gate(s) remain open. Resolve these before committing to a pilot or choosing a ledger.`;
   } else {
     verdict = 'PILOT CANDIDATE';
-    rationale = 'The workflow has a stated problem, baseline evidence, accountable participants and minimum legal, settlement and data prerequisites. This supports a bounded pilot proposal, not production approval.';
+    rationale = 'The workflow has a stated problem, baseline evidence, an explicit tokenisation mechanism, a comparison with simpler alternatives, accountable participants and minimum legal, settlement and data prerequisites. This supports a bounded pilot proposal, not production approval.';
   }
   const blueprints: Record<UseCase, { scope: string[]; architecture: string[]; measures: string[] }> = {
     'tokenised-bond': {
@@ -102,6 +116,7 @@ export function evaluateUseCase(input: UseCaseInputs): Decision {
     },
   };
   const blueprint = blueprints[input.useCase];
+  const selectedMechanisms = mechanismOptions.filter(([key]) => input.tokenisationMechanisms.includes(key)).map(([, label]) => label);
   const nextActions = verdict === 'NO-GO'
     ? ['Interview the process owner and identify the actual operational failure.', 'Quantify the current cost, delay, exception rate or liquidity impact.', 'Re-run this assessment only when a measurable problem is evidenced.']
     : open.length
@@ -110,10 +125,10 @@ export function evaluateUseCase(input: UseCaseInputs): Decision {
   rationale += ` Workflow baseline: ${Math.max(0, Math.floor(input.annualEvents))} events/year across ${Math.max(0, Math.floor(input.participants))} parties.`;
   return {
     verdict,
-    rationale,
+    rationale: rationale + (selectedMechanisms.length ? ' Mechanisms selected: ' + selectedMechanisms.join('; ') + '.' : ''),
     gates,
     pilotScope: blueprint.scope,
-    architecture: blueprint.architecture,
+    architecture: [...blueprint.architecture, 'Use tokenisation only if the selected mechanism cannot be delivered more simply with an authoritative shared database, APIs and conventional workflow controls.'],
     successMeasures: blueprint.measures,
     nextActions,
   };
