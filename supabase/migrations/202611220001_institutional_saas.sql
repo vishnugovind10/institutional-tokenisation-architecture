@@ -28,7 +28,7 @@ create table if not exists public.assessments (
   status text not null default 'draft' check (status in ('draft','in_review','approved','rejected','archived')),
   inputs jsonb not null,
   decision jsonb not null,
-  engine_version text not null default 'use-case-decision/1.1',
+  engine_version text not null default 'use-case-decision/1.2',
   version integer not null default 1 check (version > 0),
   created_by uuid not null references auth.users(id),
   updated_by uuid not null references auth.users(id),
@@ -84,7 +84,7 @@ declare v_action text;
 begin
   v_action:=case when tg_op='INSERT' then 'assessment.created' else 'assessment.updated' end;
   insert into public.audit_events(organization_id,actor_id,entity_type,entity_id,action,payload)
-  values(new.organization_id,auth.uid(),'assessment',new.id,v_action,jsonb_build_object('version',new.version,'title',new.title,'use_case',new.use_case,'status',new.status,'inputs',new.inputs,'decision',new.decision,'engine_version',new.engine_version));
+  values(new.organization_id,new.updated_by,'assessment',new.id,v_action,jsonb_build_object('version',new.version,'title',new.title,'use_case',new.use_case,'status',new.status,'inputs',new.inputs,'decision',new.decision,'engine_version',new.engine_version));
   return new;
 end; $$;
 drop trigger if exists assessments_audit on public.assessments;
@@ -140,7 +140,7 @@ grant select on public.organizations to authenticated;
 revoke all on public.organization_memberships from anon,authenticated;
 grant select on public.organization_memberships to authenticated;
 revoke all on public.assessments from anon,authenticated;
-grant select,insert,update on public.assessments to authenticated;
+grant select on public.assessments to authenticated;
 revoke all on public.audit_events from anon,authenticated;
 grant select on public.audit_events to authenticated;
 revoke all on function public.is_org_member(uuid) from public;
@@ -150,8 +150,8 @@ grant execute on function public.has_org_role(uuid,text[]) to authenticated;
 revoke all on function public.attach_invited_user_to_organization() from public,anon,authenticated;
 revoke all on function public.create_organization(text) from public;
 grant execute on function public.create_organization(text) to authenticated;
-revoke all on function public.save_assessment(uuid,uuid,text,text,jsonb,jsonb) from public;
-grant execute on function public.save_assessment(uuid,uuid,text,text,jsonb,jsonb) to authenticated;
+revoke all on function public.save_assessment(uuid,uuid,text,text,jsonb,jsonb) from public,anon,authenticated;
+drop function public.save_assessment(uuid,uuid,text,text,jsonb,jsonb);
 
 -- Invitations are intentionally delegated to a server-side Supabase Edge Function.
 -- Never expose a service-role key to the browser.
