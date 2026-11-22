@@ -7,7 +7,7 @@ import { runScenario, scenarioCatalog, type ScenarioOutcome } from './domain/sce
 import { searchSources, sources } from './domain/research';
 import { defaultUseCaseInputs, evaluateUseCase, frictionOptions, mechanismOptions, type Friction, type Readiness, type TokenisationMechanism, type UseCaseInputs } from './domain/use-case-decision';
 import { appendScenarioRun, createStoredWorkspaces, deleteWorkspace, duplicateWorkspace, importWorkspace, loadStoredWorkspaces, persistStoredWorkspaces, upsertWorkspace, type StoredWorkspaces } from './workbench/storage';
-import { useSaaS } from './saas/SaaSRoot';
+import { useSaaS } from './saas/context';
 
 type Page='overview'|'decision'|'designer'|'assessment'|'lifecycle'|'scenarios'|'compare'|'research'|'money'|'dlt'|'custody'|'integration'|'regulation'|'about';
 const pages:{id:Page;label:string;icon:typeof Boxes;group:string}[]=[
