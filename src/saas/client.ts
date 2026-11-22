@@ -49,8 +49,11 @@ export async function listAssessments(token:string,organizationId:string):Promis
 export async function listAuditEvents(token:string,organizationId:string):Promise<AuditEvent[]>{
  return request<AuditEvent[]>('/rest/v1/audit_events?select=id,entity_type,entity_id,action,payload,created_at,actor_id&organization_id=eq.'+encodeURIComponent(organizationId)+'&order=created_at.desc&limit=100',token);
 }
-export async function saveCloudAssessment(token:string,args:{assessment_id:string|null;organization_id:string;title:string;use_case:string;inputs:Record<string,unknown>;decision:Record<string,unknown>}){
- return rpc<{id:string;version:number}>('save_assessment',token,{p_assessment_id:args.assessment_id,p_organization_id:args.organization_id,p_title:args.title,p_use_case:args.use_case,p_inputs:args.inputs,p_decision:args.decision});
+export async function saveCloudAssessment(token:string,args:{assessment_id:string|null;organization_id:string;title:string;use_case:string;inputs:Record<string,unknown>}){
+ const response=await fetch(saasConfig.url+'/functions/v1/save-assessment',{method:'POST',headers:{apikey:saasConfig.anonKey,Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({assessment_id:args.assessment_id,organization_id:args.organization_id,title:args.title,use_case:args.use_case,inputs:args.inputs})});
+ const data:unknown=await response.json().catch(()=>null);
+ if(!response.ok){const message=typeof data==='object'&&data&&'error'in data?String((data as {error:unknown}).error):'Assessment save failed ('+response.status+')';throw new Error(message);}
+ return data as {id:string;version:number;decision:Record<string,unknown>;engine_version:string};
 }
 export function persistSession(session:AuthSession|null){writeSession(session);}
 
