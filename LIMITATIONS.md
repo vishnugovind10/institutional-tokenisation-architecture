@@ -1,29 +1,33 @@
-# Limitations
+# Product boundaries and limitations
 
 ## Implemented
 
-- Local, schema-versioned architecture workspace, persistence, duplicate, import and export.
-- Deterministic architecture controls and actionable findings; no aggregate score.
-- State-changing synthetic lifecycle commands for issue authorization, minting, onboarding, funding, subscription, DvP, coupon payment, redemption and reconciliation.
-- Distinct deposit mirror and omnibus backing/entitlement state; separate non-deposit cash positions.
-- HSM availability and MPC quorum use separate modeled controls.
-- Fourteen named scenario definitions, including custody, liquidity, reconciliation, finality, servicing and redemption failures.
-- Actual configuration comparison and JSON/Markdown/CSV pack export.
-- Searchable source register and research views.
+- Browser-local architecture workspaces with import, export and synthetic lifecycle simulations.
+- Deterministic use-case decision evaluation for tokenised bonds, fund units, private credit and collateral.
+- Optional Supabase Auth and organization-scoped SaaS mode with owner, admin, editor, reviewer and viewer roles.
+- Tenant-scoped assessment records with server-side deterministic recomputation and version metadata.
+- Draft, in-review, approved and rejected assessment workflow with independent reviewer separation.
+- Database-generated append-only audit events for assessment and invited-membership changes.
+- Server-side email invitations through Supabase Auth Edge Functions.
 
-## Synthetic or simplified
+## SaaS preview limitations
 
-- Actors, balances, eligibility, identifiers and evidence are fictional and local.
-- Coupon logic is a simple periodic coupon calculation with integer minor units and per-holder floor rounding.
-- Scenario recovery guidance is deterministic text and not an incident runbook for a live institution.
-- Atomic settlement is only a configuration compatibility classification; no atomic settlement protocol is implemented.
-- Workspace JSON schema v1 has basic validation and does not support migrations from future formats.
+- A Supabase project must be provisioned, the migration applied, Edge Functions deployed, Auth configured and Vercel environment variables set. The existing public URL remains a synthetic demo until these steps are completed.
+- The SaaS release checklist is not complete. There is no independent security review, penetration test, backup restore evidence, production monitoring or service-level commitment.
+- Supabase Auth sessions are stored in browser local storage in this implementation. Treat the application as unsuitable for confidential or regulated institutional records until the security review accepts this design or replaces it.
+- Audit events are append-only through application privileges and database triggers; a privileged database operator can alter them. They are not cryptographically tamper-evident or externally retained.
+- Organization member lifecycle is limited: there is no in-product role change, invitation revocation, member removal, organization deletion, account deletion or access request workflow.
+- There is no billing, subscription management, usage metering, enterprise SSO, enforced MFA, SCIM, customer support operation or custom domain.
+- Evidence attachments, external immutable audit export, legal hold, tenant-specific data residency, contractual retention controls and organization-level backups are not implemented in the application.
+- Auth email deliverability, rate limits, recovery settings, data region, retention and backup policies depend on operator configuration.
 
-## Not implemented
+## Synthetic and simplified finance model
 
-- Backend, identity, multi-user collaboration, durable central storage, account integration, payment rail, transfer agent, trading venue, DLT node, custodian, HSM or MPC cryptographic service.
-- ISO 20022 message serialization, schema validation or certification.
-- Legal title, insolvency treatment, regulatory classification, compliance attestation or legal finality determination.
-- Production resilience tests, performance benchmarks, penetration testing, audit or certification.
+- Participants, balances, eligibility, identifiers and scenario evidence are fictional unless supplied by the user as design inputs.
+- Coupon calculations use integer minor units and per-holder floor rounding.
+- Scenario recovery guidance is deterministic text, not an incident runbook for a live institution.
+- Atomic settlement is a configuration compatibility classification; no settlement protocol is implemented.
+- No banking, payment, transfer-agent, trading, DLT, custodian, HSM or MPC adapter or cryptographic service is connected.
+- The tool does not determine legal title, insolvency treatment, regulatory classification, compliance, legal finality or production suitability.
 
-No result should be interpreted as a production architecture approval, legal opinion, operational assurance, or financial recommendation.
+Do not use results as production architecture approval, legal advice, operational assurance, regulatory clearance or a financial recommendation. Do not store confidential, customer, investor, account or transaction data in the SaaS preview.

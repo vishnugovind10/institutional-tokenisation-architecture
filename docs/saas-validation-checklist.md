@@ -32,7 +32,7 @@ Create two organisations, A and B, with distinct users. For every request below,
 - [ ] Verify the database creates one audit event per successful create/update.
 - [ ] Verify failed writes do not create audit events.
 - [ ] Compare client output with independently recomputed output for the same engine version.
-- [ ] Confirm a client cannot mark its own decision as approved; approval workflow is not implemented in this release.
+- [ ] Confirm a submitter cannot approve or reject their own assessment, including after editing an assessment before submission.
 
 ## Operational readiness
 

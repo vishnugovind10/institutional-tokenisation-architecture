@@ -25,14 +25,14 @@ The browser uses only the publishable/anon key. Browser-local architecture draft
 ## First-release scope
 
 1. Email/password sign-up and sign-in.
-2. First-user organisation creation.
+2. First-user organisation creation, with additional organizations available from the tenant bar.
 3. Organisation selector for memberships already provisioned in Supabase.
 4. Tenant-isolated assessment persistence and database-side audit events.
 5. Deterministic decision snapshot versioning, recomputed server-side on every save.
-6. Owner/admin email invitations through a Supabase Edge Function; membership is attached when the invited identity is created.
+6. Owner/admin email invitations through a Supabase Edge Function; membership is attached when the invited identity is created. Invite and recovery callbacks restore the authenticated session and require a password to be set before continuing.
 7. Server-side decision recomputation before persistence; browser clients cannot write assessment rows directly.
-7. Segregated assessment review with mandatory rationale and database-side author/reviewer separation.
-8. Read-only roles for reviewer/viewer.
+8. Segregated assessment review with mandatory rationale and database-side author/reviewer separation.
+9. Read-only roles for reviewer/viewer.
 
 ## Required before a paid institutional deployment
 

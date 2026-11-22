@@ -1,4 +1,4 @@
--- Institutional Tokenisation Architecture SaaS foundation.
+-- TokenOps Studio organization-scoped SaaS foundation.
 -- Apply with: supabase db push (or the Supabase SQL editor).
 create extension if not exists pgcrypto;
 
@@ -147,7 +147,6 @@ revoke all on function public.is_org_member(uuid) from public;
 grant execute on function public.is_org_member(uuid) to authenticated;
 revoke all on function public.has_org_role(uuid,text[]) from public;
 grant execute on function public.has_org_role(uuid,text[]) to authenticated;
-revoke all on function public.attach_invited_user_to_organization() from public,anon,authenticated;
 revoke all on function public.create_organization(text) from public;
 grant execute on function public.create_organization(text) to authenticated;
 revoke all on function public.save_assessment(uuid,uuid,text,text,jsonb,jsonb) from public,anon,authenticated;
@@ -176,6 +175,7 @@ begin
   end if;
   return new;
 end; $$;
+revoke all on function public.attach_invited_user_to_organization() from public,anon,authenticated;
 drop trigger if exists auth_user_organization_invite on auth.users;
 create trigger auth_user_organization_invite after insert on auth.users
 for each row execute function public.attach_invited_user_to_organization();

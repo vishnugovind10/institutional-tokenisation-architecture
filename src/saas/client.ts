@@ -11,8 +11,25 @@ export const saasConfig = {
 };
 export const isSaasConfigured = Boolean(saasConfig.url && saasConfig.anonKey);
 const SESSION_KEY = 'ita-saas-session-v1';
+const PASSWORD_SETUP_KEY = 'ita-saas-password-setup-v1';
 export function readSession(): AuthSession|null {
   try { const raw=localStorage.getItem(SESSION_KEY); return raw ? JSON.parse(raw) as AuthSession : null; } catch { return null; }
+}
+export function needsPasswordSetup():boolean{try{return localStorage.getItem(PASSWORD_SETUP_KEY)==='true';}catch{return false;}}
+export function clearPasswordSetup(){try{localStorage.removeItem(PASSWORD_SETUP_KEY);}catch{/* Browser storage may be disabled. */}}
+export async function sessionFromAuthCallback(hash:string):Promise<AuthSession|null>{
+  const params=new URLSearchParams(hash.replace(/^#/,''));
+  const callbackError=params.get('error_description')||params.get('error');
+  if(callbackError){window.history.replaceState(null,'',window.location.pathname+window.location.search);throw new Error(callbackError);}
+  const accessToken=params.get('access_token'),refreshToken=params.get('refresh_token');
+  if(!accessToken||!refreshToken){if(params.get('type')){window.history.replaceState(null,'',window.location.pathname+window.location.search);throw new Error('This invitation or recovery link is incomplete. Request a new email link.');}return null;}
+  const expiresIn=Number(params.get('expires_in'))||3600;
+  const user=await getCurrentUser(accessToken);
+  const session:AuthSession={access_token:accessToken,refresh_token:refreshToken,expires_at:Math.floor(Date.now()/1000)+expiresIn,user};
+  writeSession(session);
+  if(['invite','recovery'].includes(params.get('type')||''))localStorage.setItem(PASSWORD_SETUP_KEY,'true');
+  window.history.replaceState(null,'',window.location.pathname+window.location.search);
+  return session;
 }
 function writeSession(session: AuthSession|null) {
   if (session) localStorage.setItem(SESSION_KEY,JSON.stringify(session)); else localStorage.removeItem(SESSION_KEY);
@@ -31,6 +48,14 @@ export async function signUp(email:string,password:string):Promise<{session:Auth
   const data=await request<Partial<AuthSession> & {expires_in?:number}>('/auth/v1/signup',undefined,{email,password},'POST');
   if(data.access_token&&data.refresh_token&&data.user){const session={access_token:data.access_token,refresh_token:data.refresh_token,user:data.user,expires_at:Math.floor(Date.now()/1000)+(data.expires_in||3600)};writeSession(session);return {session,confirmationRequired:false};}
   return {session:null,confirmationRequired:true};
+}
+export async function sendPasswordRecovery(email:string){
+  await request('/auth/v1/recover?redirect_to='+encodeURIComponent(window.location.origin),undefined,{email},'POST');
+}
+export async function updatePassword(token:string,password:string){
+  if(password.length<10)throw new Error('Use a password with at least 10 characters.');
+  await request('/auth/v1/user',token,{password},'PUT');
+  clearPasswordSetup();
 }
 export async function refreshSession(session:AuthSession):Promise<AuthSession>{
   const data=await request<Omit<AuthSession,'expires_at'>&{expires_in:number}>('/auth/v1/token?grant_type=refresh_token',undefined,{refresh_token:session.refresh_token},'POST');

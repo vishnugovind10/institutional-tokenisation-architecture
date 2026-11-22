@@ -4,3 +4,9 @@ dist/
 coverage/
 *.log
 *.tsbuildinfo
+.env
+.env.*
+!.env.example
+supabase/.branches/
+supabase/.temp/
+.vercel

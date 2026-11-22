@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased — TokenOps Studio SaaS preview
+
+- Rebranded the repository and application to TokenOps Studio and updated product metadata and operator documentation.
+- Added optional organization-scoped SaaS assessment records, role-based collaboration, independent review and audit history.
+- Added Supabase authentication, server-side decision recomputation and organization invitation functions.
+- Added invite and recovery callback handling, password setup and password recovery for SaaS accounts.
+- Added SaaS deployment architecture and release validation guidance; hosted cloud mode remains operator-configured.
+
 ## Unreleased — Use-case decision studio
 
 - Added an interactive workflow-level decision aid for tokenised bonds, fund units, private-credit participations and collateral allocation.
