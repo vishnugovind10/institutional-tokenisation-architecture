@@ -71,6 +71,8 @@ const owners: Record<DependencyId, string> = {
   cash: 'Settlement operations', owner: 'Workflow operations', counterparty: 'Pilot sponsor', data: 'Data owner',
 };
 const qualities = (value: EvidenceQuality | undefined, fallback: EvidenceQuality = 'missing'): EvidenceQuality => value === 'user-confirmed' || value === 'assumption' || value === 'missing' ? value : fallback;
+const isEconomicObjective = (value: unknown): value is EconomicObjective => value === 'cost' || value === 'time' || value === 'exceptions';
+const normalizedTolerance = (value: number, fallback = 10) => Number.isFinite(value) ? Math.min(1_000, Math.max(0, value)) : fallback;
 export const defaultUseCaseInputs: UseCaseInputs = {
   useCase: 'collateral', annualEvents: 150, participants: 5,
   frictions: ['reconciliation', 'settlement-delay', 'manual-eligibility'],
@@ -128,28 +130,34 @@ const dependencyConsequences: Record<DependencyId, string> = {
 function safeNonNegative(value: number | null): number | null {
   return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : null;
 }
+function safePercentage(value: number | null): number | null {
+  const number = safeNonNegative(value);
+  return number !== null && number <= 100 ? number : null;
+}
+function finiteResult(value: number): number | null { return Number.isFinite(value) ? value : null; }
 function metricTradeoff(label: string, baseline: number | null, proposed: number | null, tolerance: number) {
   const base = safeNonNegative(baseline), target = safeNonNegative(proposed);
   if (base === null || target === null) return null;
+  const allowedDeterioration = normalizedTolerance(tolerance);
   const direction = target < base ? 'improvement' as const : target > base ? 'deterioration' as const : 'unchanged' as const;
   const changePct = base === 0 ? (target === 0 ? 0 : null) : (target - base) / base * 100;
-  const material = direction === 'deterioration' && (changePct === null || changePct > Math.max(0, tolerance));
+  const material = direction === 'deterioration' && (changePct === null || changePct > allowedDeterioration);
   const magnitude = changePct === null ? 'increased from zero' : `${Math.abs(changePct).toFixed(1)}%`;
-  const description = direction === 'unchanged' ? `${label}: unchanged.` : `${label}: ${direction === 'improvement' ? 'improves' : 'deteriorates'} ${magnitude}${material ? ` (exceeds ${Math.max(0, tolerance)}% tolerance)` : ''}.`;
-  return { label, baseline: base, proposed: target, direction, changePct, tolerance: Math.max(0, tolerance), material, description };
+  const description = direction === 'unchanged' ? `${label}: unchanged.` : `${label}: ${direction === 'improvement' ? 'improves' : 'deteriorates'} ${magnitude}${material ? ` (exceeds ${allowedDeterioration}% tolerance)` : ''}.`;
+  return { label, baseline: base, proposed: target, direction, changePct, tolerance: allowedDeterioration, material, description };
 }
 function economicSummary(input: UseCaseInputs): Decision['economicSummary'] {
   const e = input.economics;
   const baseCost = safeNonNegative(e.baselineCostPerEventEur), proposedCost = safeNonNegative(e.proposedCostPerEventEur);
   const baseHours = safeNonNegative(e.baselineHoursPerEvent), proposedHours = safeNonNegative(e.proposedHoursPerEvent);
-  const baseExceptions = safeNonNegative(e.baselineExceptionRatePct), proposedExceptions = safeNonNegative(e.proposedExceptionRatePct);
+  const baseExceptions = safePercentage(e.baselineExceptionRatePct), proposedExceptions = safePercentage(e.proposedExceptionRatePct);
   const events = Math.max(0, Math.floor(input.annualEvents));
-  const cost = baseCost !== null && proposedCost !== null ? (baseCost - proposedCost) * events : null;
-  const hours = baseHours !== null && proposedHours !== null ? (baseHours - proposedHours) * events : null;
-  const exceptions = baseExceptions !== null && proposedExceptions !== null ? (baseExceptions - proposedExceptions) / 100 * events : null;
+  const cost = baseCost !== null && proposedCost !== null ? finiteResult((baseCost - proposedCost) * events) : null;
+  const hours = baseHours !== null && proposedHours !== null ? finiteResult((baseHours - proposedHours) * events) : null;
+  const exceptions = baseExceptions !== null && proposedExceptions !== null ? finiteResult((baseExceptions - proposedExceptions) / 100 * events) : null;
   const implementation = safeNonNegative(e.oneTimeImplementationCostEur), runCost = safeNonNegative(e.annualOperatingCostEur);
-  const netFirstYear = cost !== null && implementation !== null && runCost !== null ? cost - implementation - runCost : null;
-  const netRecurring = cost !== null && runCost !== null ? cost - runCost : null;
+  const netFirstYear = cost !== null && implementation !== null && runCost !== null ? finiteResult(cost - implementation - runCost) : null;
+  const netRecurring = cost !== null && runCost !== null ? finiteResult(cost - runCost) : null;
   const comparisons = [
     metricTradeoff('Cost / event', baseCost, proposedCost, e.costDeteriorationTolerancePct),
     metricTradeoff('Hours / event', baseHours, proposedHours, e.timeDeteriorationTolerancePct),
@@ -170,14 +178,19 @@ export function evaluateUseCase(input: UseCaseInputs): Decision {
   const altQuality = qualities(input.alternativeEvidenceQuality);
   const e = input.economics || defaultUseCaseInputs.economics;
   const economics = { ...defaultUseCaseInputs.economics, ...e };
+  economics.primaryObjective = isEconomicObjective(economics.primaryObjective) ? economics.primaryObjective : defaultUseCaseInputs.economics.primaryObjective;
+  economics.costDeteriorationTolerancePct = normalizedTolerance(economics.costDeteriorationTolerancePct);
+  economics.timeDeteriorationTolerancePct = normalizedTolerance(economics.timeDeteriorationTolerancePct);
+  economics.exceptionDeteriorationTolerancePct = normalizedTolerance(economics.exceptionDeteriorationTolerancePct);
   const dependencyEvidence = { ...defaultUseCaseInputs.dependencyEvidence, ...(input.dependencyEvidence || {}) };
   const dependencyOwners = { ...owners, ...(input.dependencyOwners || {}) };
   const readiness = { ...defaultUseCaseInputs.readiness, ...(input.readiness || {}) };
   const compare = economicSummary({ ...input, annualEvents, economics });
-  const primaryInputs = economics.primaryObjective === 'cost' ? [economics.baselineCostPerEventEur, economics.proposedCostPerEventEur]
+  const primaryInputs: [number | null, number | null] = economics.primaryObjective === 'cost' ? [economics.baselineCostPerEventEur, economics.proposedCostPerEventEur]
     : economics.primaryObjective === 'time' ? [economics.baselineHoursPerEvent, economics.proposedHoursPerEvent]
       : [economics.baselineExceptionRatePct, economics.proposedExceptionRatePct];
-  const primaryComparisonExists = safeNonNegative(primaryInputs[0]) !== null && safeNonNegative(primaryInputs[1]) !== null;
+  const primaryMetric = economics.primaryObjective === 'exceptions' ? safePercentage : safeNonNegative;
+  const primaryComparisonExists = primaryMetric(primaryInputs[0]) !== null && primaryMetric(primaryInputs[1]) !== null;
   const primaryImprovement = compare.primaryObjectiveImproved === true;
   const sourceReady = input.baselineEvidenceSource.trim().length >= 3;
   const alternativesReady = input.existingSystemGap.trim().length >= 12 && altQuality === 'user-confirmed' && input.conventionalAlternative !== 'not-assessed';

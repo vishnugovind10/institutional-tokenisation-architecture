@@ -20,6 +20,8 @@ The economic comparison annualises current-versus-proposed cost per event, hours
 
 The comparison also includes one-time implementation cost, annual operating cost, and net first-year and recurring cost results when inputs are available. Costs and benefits use the same currency (EUR in this version). Missing implementation/run costs leave net results unquantified and the economic gate open. No time or exception reduction is silently converted into cash.
 
+Economic measures and costs must be finite and non-negative; exception-rate inputs must also be within 0–100%. Invalid measures are excluded and cannot satisfy the selected objective. Annualized values that overflow are left unquantified. Tolerance inputs are bounded to 0–1,000%; an invalid or non-finite value falls back to 10%, and a negative value becomes 0%. When the baseline is zero, zero-to-zero is unchanged and a move above zero is a material deterioration regardless of tolerance. A tolerance never substitutes for improvement in the selected primary objective.
+
 Single-gate sensitivity is explicitly labeled: **“Hypothetical result assuming the selected evidence gate is satisfied. No evidence has been independently verified or upgraded.”** It marks one gate in an isolated copy and never changes the saved assessment. The label appears alongside each sensitivity analysis so a counterfactual cannot be confused with evidence verification. If other blockers remain, the hypothetical result remains HOLD; this identifies dependencies that need to move together.
 
 ## Decision gates

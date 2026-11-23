@@ -29,6 +29,14 @@ npm run dev
 
 Without `VITE_SAAS_MODE=true`, the workbench runs in local demo mode and stores drafts in the current browser. No backend is required for the synthetic demo.
 
+Regenerate the reproducible collateral committee package with:
+
+```bash
+npm run sample:collateral
+```
+
+The output is [a portable JSON assessment](examples/collateral-committee-assessment.json) and [the committee memo](examples/collateral-committee-assessment.md). See the [90-second product demo runbook](docs/collateral-product-demo.md) for the decision, economic trade-offs, lifecycle and blocked-event walkthrough.
+
 ## Configure SaaS mode
 
 SaaS mode requires a Supabase project and a Vercel deployment. Copy `.env.example` to `.env.local` and set the public client values:
@@ -71,6 +79,8 @@ All outcomes are bounded illustrations. The model does not determine legal owner
 - [Methodology](METHODOLOGY.md)
 - [Use-case decision method](docs/use-case-decision-method.md)
 - [SaaS architecture](docs/saas-architecture.md)
+- [Current deployment status](docs/deployment-status.md)
+- [Collateral demo and committee memo](docs/collateral-product-demo.md)
 - [Security boundary](SECURITY.md)
 - [Release validation checklist](docs/saas-validation-checklist.md)
 - [Limitations](LIMITATIONS.md)

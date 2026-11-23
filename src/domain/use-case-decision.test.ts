@@ -111,6 +111,46 @@ describe('use-case decision logic', () => {
     expect(result.economicSummary.materialDeteriorations).toHaveLength(0);
     expect(result.gates.find(g => g.id === 'economic')?.status).toBe('READY');
   });
+  it('treats a rise from a zero baseline as a material deterioration and zero-to-zero as unchanged', () => {
+    const rising = evaluateUseCase({ ...ready, economics: { ...ready.economics, baselineCostPerEventEur: 0, proposedCostPerEventEur: 5 } });
+    expect(rising.economicSummary.deteriorations.some(item => item.includes('increased from zero'))).toBe(true);
+    expect(rising.economicSummary.materialDeteriorations.some(item => item.includes('Cost / event'))).toBe(true);
+    expect(rising.gates.find(g => g.id === 'economic')?.status).toBe('OPEN');
+    const flat = evaluateUseCase({ ...ready, economics: { ...ready.economics, baselineCostPerEventEur: 0, proposedCostPerEventEur: 0 } });
+    expect(flat.economicSummary.primaryObjectiveImproved).toBe(false);
+    expect(flat.economicSummary.materialDeteriorations.some(item => item.includes('Cost / event'))).toBe(false);
+  });
+  it('excludes negative and non-finite economic values from comparison and the economic gate', () => {
+    const invalid = evaluateUseCase({ ...ready, economics: { ...ready.economics, baselineCostPerEventEur: -1, proposedCostPerEventEur: 2, baselineHoursPerEvent: Number.NaN, proposedHoursPerEvent: 2, oneTimeImplementationCostEur: Number.POSITIVE_INFINITY } });
+    expect(invalid.economicSummary.annualCostSavingEur).toBeNull();
+    expect(invalid.economicSummary.annualHoursSaved).toBeNull();
+    expect(invalid.gates.find(g => g.id === 'economic')?.status).toBe('OPEN');
+    const invalidRate = evaluateUseCase({ ...ready, economics: { ...ready.economics, baselineExceptionRatePct: 120 } });
+    expect(invalidRate.economicSummary.annualExceptionsAvoided).toBeNull();
+  });
+  it('does not emit infinite annualized figures when finite inputs overflow arithmetic', () => {
+    const overflow = evaluateUseCase({ ...ready, annualEvents: 1e308, economics: { ...ready.economics, baselineCostPerEventEur: 1e308, proposedCostPerEventEur: 0 } });
+    expect(overflow.economicSummary.annualCostSavingEur).toBeNull();
+    expect(overflow.economicSummary.netRecurringEur).toBeNull();
+  });
+  it('falls back to the default objective for malformed persisted values', () => {
+    const malformed = evaluateUseCase({ ...ready, economics: { ...ready.economics, primaryObjective: 'unrecognized' as UseCaseInputs['economics']['primaryObjective'] } });
+    expect(malformed.economicSummary.primaryObjective).toBe('cost');
+    expect(malformed.economicSummary.primaryObjectiveImproved).toBe(true);
+  });
+  it('bounds negative, non-finite and extreme deterioration tolerances', () => {
+    const bounded = evaluateUseCase({ ...ready, economics: { ...ready.economics, proposedHoursPerEvent: 6.3, timeDeteriorationTolerancePct: -25, proposedExceptionRatePct: 8.5, exceptionDeteriorationTolerancePct: Number.POSITIVE_INFINITY } });
+    expect(bounded.economicSummary.materialDeteriorations.some(item => item.includes('Hours / event'))).toBe(true);
+    expect(bounded.economicSummary.materialDeteriorations.some(item => item.includes('Exception rate'))).toBe(false);
+    const overCap = evaluateUseCase({ ...ready, economics: { ...ready.economics, proposedHoursPerEvent: 7.8, timeDeteriorationTolerancePct: 1e99 } });
+    expect(overCap.economicSummary.materialDeteriorations.some(item => item.includes('Hours / event'))).toBe(false);
+  });
+  it('keeps the primary objective requirement when secondary metrics improve and tolerances are extreme', () => {
+    const result = evaluateUseCase({ ...ready, economics: { ...ready.economics, primaryObjective: 'time', proposedHoursPerEvent: 7.8, proposedCostPerEventEur: 0, proposedExceptionRatePct: 0, timeDeteriorationTolerancePct: 1e99, costDeteriorationTolerancePct: 1e99, exceptionDeteriorationTolerancePct: 1e99 } });
+    expect(result.economicSummary.improvements).toHaveLength(2);
+    expect(result.economicSummary.primaryObjectiveImproved).toBe(false);
+    expect(result.gates.find(g => g.id === 'economic')?.status).toBe('OPEN');
+  });
   it('labels one-gate sensitivity as hypothetical and does not mutate assessed evidence', () => {
     const held = { ...ready, baselineEvidenceQuality: 'assumption' as const, readiness: { ...ready.readiness, custodyControlKnown: false } };
     const result = simulateSingleGate(held, 'custody');

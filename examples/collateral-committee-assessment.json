@@ -1,0 +1,1071 @@
+{
+  "demoId": "COLLATERAL-DEMO-001",
+  "record": {
+    "schemaVersion": "2.1",
+    "engineVersion": "use-case-decision/2.2",
+    "version": 1,
+    "generatedAt": "2026-11-23T12:00:00.000Z",
+    "title": "Tokenised collateral allocation and settlement — committee assessment",
+    "workflow": "collateral",
+    "verdict": "HOLD",
+    "rationale": "9 decision gate(s) remain open. Resolve the named evidence, economic, legal, custody, cash, data and operating dependencies before recommending a pilot. Selected mechanisms: Multiple parties need a shared, consistently updated position or ownership state; Asset and cash actions need coordinated, conditional execution across participants.",
+    "inputs": {
+      "useCase": "collateral",
+      "annualEvents": 120,
+      "participants": 4,
+      "frictions": [
+        "reconciliation",
+        "settlement-delay",
+        "manual-eligibility"
+      ],
+      "baselineEvidence": "SYNTHETIC: the illustrative workflow takes 6.5 hours per allocation, costs €420 per event and records a 9% exception rate.",
+      "baselineEvidenceSource": "Synthetic demonstration dataset COLLATERAL-DEMO-001; illustrative 90-day observation window.",
+      "baselineEvidenceQuality": "assumption",
+      "tokenisationMechanisms": [
+        "shared-state",
+        "conditional-settlement"
+      ],
+      "existingSystemGap": "SYNTHETIC: assume the incumbent API process needs manual eligibility checks and independent position reconciliation across four parties.",
+      "alternativeEvidenceQuality": "assumption",
+      "conventionalAlternative": "insufficient",
+      "economics": {
+        "baselineCostPerEventEur": 420,
+        "proposedCostPerEventEur": 310,
+        "baselineHoursPerEvent": 6.5,
+        "proposedHoursPerEvent": 7,
+        "baselineExceptionRatePct": 9,
+        "proposedExceptionRatePct": 10,
+        "oneTimeImplementationCostEur": 8000,
+        "annualOperatingCostEur": 3000,
+        "primaryObjective": "cost",
+        "costDeteriorationTolerancePct": 10,
+        "timeDeteriorationTolerancePct": 10,
+        "exceptionDeteriorationTolerancePct": 10,
+        "acceptMaterialDeterioration": false,
+        "sourceNote": "SYNTHETIC: every baseline and proposed value is illustrative; none is measured or independently verified.",
+        "baselineQuality": "assumption",
+        "proposedQuality": "assumption"
+      },
+      "dependencyOwners": {
+        "authority": "Legal and collateral documentation",
+        "rights": "Collateral Operations",
+        "eligibility": "Collateral Risk",
+        "custody": "Custody Operations",
+        "technology": "Architecture",
+        "cash": "Settlement Operations",
+        "owner": "Collateral Operations",
+        "counterparty": "Pilot Sponsor",
+        "data": "Operations Analytics"
+      },
+      "dependencyEvidence": {
+        "authority": "assumption",
+        "rights": "assumption",
+        "eligibility": "assumption",
+        "custody": "assumption",
+        "technology": "assumption",
+        "cash": "assumption",
+        "owner": "assumption",
+        "counterparty": "assumption",
+        "data": "assumption"
+      },
+      "readiness": {
+        "legalRegisterKnown": true,
+        "transferRulesDefined": false,
+        "settlementRouteKnown": true,
+        "accountableOwner": true,
+        "pilotCounterpartyIdentified": false,
+        "usableDataAvailable": false,
+        "collateralEligibilityKnown": false,
+        "custodyControlKnown": false,
+        "technologyBoundaryDefined": false
+      }
+    },
+    "decision": {
+      "verdict": "HOLD",
+      "rationale": "9 decision gate(s) remain open. Resolve the named evidence, economic, legal, custody, cash, data and operating dependencies before recommending a pilot. Selected mechanisms: Multiple parties need a shared, consistently updated position or ownership state; Asset and cash actions need coordinated, conditional execution across participants.",
+      "gates": [
+        {
+          "id": "problem",
+          "label": "Operational problem evidenced",
+          "status": "READY",
+          "consequence": "Select a recurring, material workflow friction and define its observable effect.",
+          "owner": "Collateral Operations",
+          "evidenceQuality": "assumption"
+        },
+        {
+          "id": "evidence",
+          "label": "Baseline evidence has a traceable source",
+          "status": "OPEN",
+          "consequence": "Capture a measurable baseline, source and observation period. A user-marked verified source is not independently checked by this application.",
+          "owner": "Operations Analytics",
+          "evidenceQuality": "assumption"
+        },
+        {
+          "id": "scale",
+          "label": "Multi-party workflow is in scope",
+          "status": "READY",
+          "consequence": "Confirm recurring workflow volume and at least two participating parties.",
+          "owner": "Collateral Operations",
+          "evidenceQuality": "assumption"
+        },
+        {
+          "id": "mechanism",
+          "label": "Tokenisation-specific mechanism identified",
+          "status": "READY",
+          "consequence": "Name the shared-state, programmable-rights, conditional-settlement, lifecycle or entitlement mechanism needed.",
+          "owner": "Architecture",
+          "evidenceQuality": "assumption"
+        },
+        {
+          "id": "alternative",
+          "label": "Conventional alternative directly compared",
+          "status": "OPEN",
+          "consequence": "Compare the incumbent workflow and conventional database/API option against the specific requirement; identify evidence for the stated gap.",
+          "owner": "Architecture",
+          "evidenceQuality": "assumption"
+        },
+        {
+          "id": "economic",
+          "label": "Primary objective and trade-offs are acceptable",
+          "status": "OPEN",
+          "consequence": "Material deterioration exceeds tolerance: Exception rate: deteriorates 11.1% (exceeds 10% tolerance). Explicitly accept the trade-off or revise the proposed case.",
+          "owner": "Collateral Operations",
+          "evidenceQuality": "assumption"
+        },
+        {
+          "id": "authority",
+          "label": "Authoritative legal register identified",
+          "status": "READY",
+          "consequence": "Owner: Legal and collateral documentation.",
+          "owner": "Legal and collateral documentation",
+          "evidenceQuality": "assumption"
+        },
+        {
+          "id": "rights",
+          "label": "Transfer, consent and eligibility rules defined",
+          "status": "OPEN",
+          "consequence": "Document eligibility, transfer restrictions, consent, substitution and release rules.",
+          "owner": "Collateral Operations",
+          "evidenceQuality": "assumption"
+        },
+        {
+          "id": "eligibility",
+          "label": "Collateral eligibility and haircut rules defined",
+          "status": "OPEN",
+          "consequence": "Identify the agreement, asset criteria, valuation source, haircut schedule, concentration rules and override authority.",
+          "owner": "Collateral Risk",
+          "evidenceQuality": "assumption"
+        },
+        {
+          "id": "custody",
+          "label": "Custody control and asset availability confirmed",
+          "status": "OPEN",
+          "consequence": "Confirm control location, segregation, encumbrance status, authorization and release authority.",
+          "owner": "Custody Operations",
+          "evidenceQuality": "assumption"
+        },
+        {
+          "id": "technology",
+          "label": "Data and integration boundaries defined",
+          "status": "OPEN",
+          "consequence": "Map source data, interfaces, timestamps, identity, shared-state and reconciliation responsibilities.",
+          "owner": "Architecture",
+          "evidenceQuality": "assumption"
+        },
+        {
+          "id": "cash",
+          "label": "Cash settlement route and recovery identified",
+          "status": "READY",
+          "consequence": "Owner: Settlement Operations.",
+          "owner": "Settlement Operations",
+          "evidenceQuality": "assumption"
+        },
+        {
+          "id": "owner",
+          "label": "Accountable workflow and exception owner assigned",
+          "status": "READY",
+          "consequence": "Owner: Collateral Operations.",
+          "owner": "Collateral Operations",
+          "evidenceQuality": "assumption"
+        },
+        {
+          "id": "counterparty",
+          "label": "Pilot counterparty identified",
+          "status": "OPEN",
+          "consequence": "Identify a named participant willing to run a bounded shadow or controlled pilot.",
+          "owner": "Pilot Sponsor",
+          "evidenceQuality": "assumption"
+        },
+        {
+          "id": "data",
+          "label": "Representative workflow data available",
+          "status": "OPEN",
+          "consequence": "Secure permissioned representative data and a repeatable source for like-for-like baseline comparison.",
+          "owner": "Operations Analytics",
+          "evidenceQuality": "assumption"
+        }
+      ],
+      "pilotScope": [
+        "One collateral agreement and one margin-call type",
+        "Check asset eligibility, valuation source, haircuts, concentration and encumbrance before allocation",
+        "Allocate in shadow mode; obtain custody acknowledgement before treating an asset as mobilised",
+        "Release only after obligation status and authority are confirmed; reconcile inventory, register and settlement records"
+      ],
+      "architecture": [
+        "Legal agreement and authoritative collateral register define rights, substitution and release conditions.",
+        "Collateral operations own eligibility, valuation, haircut and concentration adjudication; custody confirms control and availability.",
+        "A pre-pledge allocation proposal is distinct from pledge execution and release; settlement records retain separate accepted, delivered and released states.",
+        "Model settlement cash, fees and shortfall funding separately; do not treat tokenised collateral as cash.",
+        "Token representation is optional. Use it only if its measured shared-state or conditional-settlement benefit exceeds conventional workflow cost and control impact."
+      ],
+      "successMeasures": [
+        "Time from margin call to confirmed allocation and delivery",
+        "Eligible collateral utilisation and substitution turnaround",
+        "Manual touchpoints, exceptions and reconciliation breaks",
+        "Settlement failures, stale-data blocks and recovery time"
+      ],
+      "nextActions": [
+        "Baseline evidence has a traceable source: Capture a measurable baseline, source and observation period. A user-marked verified source is not independently checked by this application.",
+        "Conventional alternative directly compared: Compare the incumbent workflow and conventional database/API option against the specific requirement; identify evidence for the stated gap.",
+        "Primary objective and trade-offs are acceptable: Material deterioration exceeds tolerance: Exception rate: deteriorates 11.1% (exceeds 10% tolerance). Explicitly accept the trade-off or revise the proposed case.",
+        "Transfer, consent and eligibility rules defined: Document eligibility, transfer restrictions, consent, substitution and release rules.",
+        "Collateral eligibility and haircut rules defined: Identify the agreement, asset criteria, valuation source, haircut schedule, concentration rules and override authority.",
+        "Custody control and asset availability confirmed: Confirm control location, segregation, encumbrance status, authorization and release authority.",
+        "Data and integration boundaries defined: Map source data, interfaces, timestamps, identity, shared-state and reconciliation responsibilities.",
+        "Pilot counterparty identified: Identify a named participant willing to run a bounded shadow or controlled pilot.",
+        "Representative workflow data available: Secure permissioned representative data and a repeatable source for like-for-like baseline comparison."
+      ],
+      "decisionDrivers": [
+        "Baseline evidence has a traceable source: Capture a measurable baseline, source and observation period. A user-marked verified source is not independently checked by this application.",
+        "Conventional alternative directly compared: Compare the incumbent workflow and conventional database/API option against the specific requirement; identify evidence for the stated gap.",
+        "Primary objective and trade-offs are acceptable: Material deterioration exceeds tolerance: Exception rate: deteriorates 11.1% (exceeds 10% tolerance). Explicitly accept the trade-off or revise the proposed case.",
+        "Transfer, consent and eligibility rules defined: Document eligibility, transfer restrictions, consent, substitution and release rules.",
+        "Collateral eligibility and haircut rules defined: Identify the agreement, asset criteria, valuation source, haircut schedule, concentration rules and override authority.",
+        "Custody control and asset availability confirmed: Confirm control location, segregation, encumbrance status, authorization and release authority.",
+        "Data and integration boundaries defined: Map source data, interfaces, timestamps, identity, shared-state and reconciliation responsibilities.",
+        "Pilot counterparty identified: Identify a named participant willing to run a bounded shadow or controlled pilot.",
+        "Representative workflow data available: Secure permissioned representative data and a repeatable source for like-for-like baseline comparison.",
+        "Hours / event: deteriorates 7.7%.",
+        "Exception rate: deteriorates 11.1% (exceeds 10% tolerance)."
+      ],
+      "economicSummary": {
+        "annualCostSavingEur": 13200,
+        "annualHoursSaved": -60,
+        "annualExceptionsAvoided": -1.2,
+        "netFirstYearEur": 2200,
+        "netRecurringEur": 10200,
+        "primaryObjective": "cost",
+        "primaryObjectiveImproved": true,
+        "improvements": [
+          "Cost / event: improves 26.2%."
+        ],
+        "deteriorations": [
+          "Hours / event: deteriorates 7.7%.",
+          "Exception rate: deteriorates 11.1% (exceeds 10% tolerance)."
+        ],
+        "materialDeteriorations": [
+          "Exception rate: deteriorates 11.1% (exceeds 10% tolerance)."
+        ],
+        "tradeoffAccepted": false,
+        "note": "Annualised modeled differences over 120 events. Proposed values are assumption and are not measured outcomes. The primary objective is cost; material deteriorations require explicit acceptance. Net returns include implementation and run costs only when entered."
+      },
+      "failureScenarios": [
+        {
+          "id": "insufficient-cash",
+          "name": "Insufficient settlement cash",
+          "expected": "Block cash settlement, preserve both obligations and identify the funding owner."
+        },
+        {
+          "id": "ineligible-collateral",
+          "name": "Ineligible collateral",
+          "expected": "Reject allocation against the governing eligibility and haircut rules; retain a reason code."
+        },
+        {
+          "id": "failed-delivery",
+          "name": "Failed delivery",
+          "expected": "Keep the margin obligation open; do not mark collateral mobilised without source confirmation."
+        },
+        {
+          "id": "stale-data",
+          "name": "Stale valuation or inventory data",
+          "expected": "Block allocation until an authoritative fresh observation is received."
+        },
+        {
+          "id": "reconciliation-mismatch",
+          "name": "Reconciliation mismatch",
+          "expected": "Open a break across agreement, inventory, custody and settlement records; never silently repair."
+        }
+      ],
+      "assumptions": [
+        "Baseline narrative is marked as an assumption or missing; it has not been verified.",
+        "Proposed cost/time/exception values are assumptions, not measured outcomes.",
+        "Conventional alternative assessment is not user-confirmed.",
+        "Operational problem evidenced is marked ready by the user but its evidence is assumption.",
+        "Multi-party workflow is in scope is marked ready by the user but its evidence is assumption.",
+        "Tokenisation-specific mechanism identified is marked ready by the user but its evidence is assumption.",
+        "Authoritative legal register identified is marked ready by the user but its evidence is assumption.",
+        "Cash settlement route and recovery identified is marked ready by the user but its evidence is assumption.",
+        "Accountable workflow and exception owner assigned is marked ready by the user but its evidence is assumption."
+      ]
+    },
+    "architecture": {
+      "proposedModel": [
+        "Legal agreement and authoritative collateral register define rights, substitution and release conditions.",
+        "Collateral operations own eligibility, valuation, haircut and concentration adjudication; custody confirms control and availability.",
+        "A pre-pledge allocation proposal is distinct from pledge execution and release; settlement records retain separate accepted, delivered and released states.",
+        "Model settlement cash, fees and shortfall funding separately; do not treat tokenised collateral as cash.",
+        "Token representation is optional. Use it only if its measured shared-state or conditional-settlement benefit exceeds conventional workflow cost and control impact."
+      ],
+      "systemOfRecord": [
+        {
+          "domain": "Legal rights",
+          "authoritativeRecord": "Collateral agreement and legal collateral register",
+          "owner": "Legal and collateral documentation"
+        },
+        {
+          "domain": "Eligibility and valuation",
+          "authoritativeRecord": "Collateral eligibility rules, valuation source and haircut schedule",
+          "owner": "Collateral Risk"
+        },
+        {
+          "domain": "Asset inventory",
+          "authoritativeRecord": "Custodian inventory and encumbrance record",
+          "owner": "Custody Operations"
+        },
+        {
+          "domain": "Settlement",
+          "authoritativeRecord": "Settlement operator status and cash account record",
+          "owner": "Settlement Operations"
+        },
+        {
+          "domain": "Operational state",
+          "authoritativeRecord": "Allocation coordinator and independent reconciliation evidence",
+          "owner": "Collateral Operations"
+        }
+      ]
+    },
+    "dependencies": [
+      {
+        "id": "problem",
+        "label": "Operational problem evidenced",
+        "status": "READY",
+        "consequence": "Select a recurring, material workflow friction and define its observable effect.",
+        "owner": "Collateral Operations",
+        "evidenceQuality": "assumption"
+      },
+      {
+        "id": "evidence",
+        "label": "Baseline evidence has a traceable source",
+        "status": "OPEN",
+        "consequence": "Capture a measurable baseline, source and observation period. A user-marked verified source is not independently checked by this application.",
+        "owner": "Operations Analytics",
+        "evidenceQuality": "assumption"
+      },
+      {
+        "id": "scale",
+        "label": "Multi-party workflow is in scope",
+        "status": "READY",
+        "consequence": "Confirm recurring workflow volume and at least two participating parties.",
+        "owner": "Collateral Operations",
+        "evidenceQuality": "assumption"
+      },
+      {
+        "id": "mechanism",
+        "label": "Tokenisation-specific mechanism identified",
+        "status": "READY",
+        "consequence": "Name the shared-state, programmable-rights, conditional-settlement, lifecycle or entitlement mechanism needed.",
+        "owner": "Architecture",
+        "evidenceQuality": "assumption"
+      },
+      {
+        "id": "alternative",
+        "label": "Conventional alternative directly compared",
+        "status": "OPEN",
+        "consequence": "Compare the incumbent workflow and conventional database/API option against the specific requirement; identify evidence for the stated gap.",
+        "owner": "Architecture",
+        "evidenceQuality": "assumption"
+      },
+      {
+        "id": "economic",
+        "label": "Primary objective and trade-offs are acceptable",
+        "status": "OPEN",
+        "consequence": "Material deterioration exceeds tolerance: Exception rate: deteriorates 11.1% (exceeds 10% tolerance). Explicitly accept the trade-off or revise the proposed case.",
+        "owner": "Collateral Operations",
+        "evidenceQuality": "assumption"
+      },
+      {
+        "id": "authority",
+        "label": "Authoritative legal register identified",
+        "status": "READY",
+        "consequence": "Owner: Legal and collateral documentation.",
+        "owner": "Legal and collateral documentation",
+        "evidenceQuality": "assumption"
+      },
+      {
+        "id": "rights",
+        "label": "Transfer, consent and eligibility rules defined",
+        "status": "OPEN",
+        "consequence": "Document eligibility, transfer restrictions, consent, substitution and release rules.",
+        "owner": "Collateral Operations",
+        "evidenceQuality": "assumption"
+      },
+      {
+        "id": "eligibility",
+        "label": "Collateral eligibility and haircut rules defined",
+        "status": "OPEN",
+        "consequence": "Identify the agreement, asset criteria, valuation source, haircut schedule, concentration rules and override authority.",
+        "owner": "Collateral Risk",
+        "evidenceQuality": "assumption"
+      },
+      {
+        "id": "custody",
+        "label": "Custody control and asset availability confirmed",
+        "status": "OPEN",
+        "consequence": "Confirm control location, segregation, encumbrance status, authorization and release authority.",
+        "owner": "Custody Operations",
+        "evidenceQuality": "assumption"
+      },
+      {
+        "id": "technology",
+        "label": "Data and integration boundaries defined",
+        "status": "OPEN",
+        "consequence": "Map source data, interfaces, timestamps, identity, shared-state and reconciliation responsibilities.",
+        "owner": "Architecture",
+        "evidenceQuality": "assumption"
+      },
+      {
+        "id": "cash",
+        "label": "Cash settlement route and recovery identified",
+        "status": "READY",
+        "consequence": "Owner: Settlement Operations.",
+        "owner": "Settlement Operations",
+        "evidenceQuality": "assumption"
+      },
+      {
+        "id": "owner",
+        "label": "Accountable workflow and exception owner assigned",
+        "status": "READY",
+        "consequence": "Owner: Collateral Operations.",
+        "owner": "Collateral Operations",
+        "evidenceQuality": "assumption"
+      },
+      {
+        "id": "counterparty",
+        "label": "Pilot counterparty identified",
+        "status": "OPEN",
+        "consequence": "Identify a named participant willing to run a bounded shadow or controlled pilot.",
+        "owner": "Pilot Sponsor",
+        "evidenceQuality": "assumption"
+      },
+      {
+        "id": "data",
+        "label": "Representative workflow data available",
+        "status": "OPEN",
+        "consequence": "Secure permissioned representative data and a repeatable source for like-for-like baseline comparison.",
+        "owner": "Operations Analytics",
+        "evidenceQuality": "assumption"
+      }
+    ],
+    "evidenceRegister": [
+      {
+        "item": "Operational baseline",
+        "quality": "assumption",
+        "source": "Synthetic demonstration dataset COLLATERAL-DEMO-001; illustrative 90-day observation window.",
+        "owner": "Operations Analytics"
+      },
+      {
+        "item": "Conventional alternative comparison",
+        "quality": "assumption",
+        "source": "SYNTHETIC: assume the incumbent API process needs manual eligibility checks and independent position reconciliation across four parties.",
+        "owner": "Architecture"
+      },
+      {
+        "item": "Economic baseline",
+        "quality": "assumption",
+        "source": "SYNTHETIC: every baseline and proposed value is illustrative; none is measured or independently verified.",
+        "owner": "Collateral Operations"
+      },
+      {
+        "item": "Proposed outcome",
+        "quality": "assumption",
+        "source": "SYNTHETIC: every baseline and proposed value is illustrative; none is measured or independently verified.",
+        "owner": "Collateral Operations"
+      },
+      {
+        "item": "Authoritative legal register identified",
+        "quality": "assumption",
+        "source": "User-marked ready; not independently verified",
+        "owner": "Legal and collateral documentation"
+      },
+      {
+        "item": "Transfer, consent and eligibility rules defined",
+        "quality": "assumption",
+        "source": "Missing or unresolved",
+        "owner": "Collateral Operations"
+      },
+      {
+        "item": "Collateral eligibility and haircut rules defined",
+        "quality": "assumption",
+        "source": "Missing or unresolved",
+        "owner": "Collateral Risk"
+      },
+      {
+        "item": "Custody control and asset availability confirmed",
+        "quality": "assumption",
+        "source": "Missing or unresolved",
+        "owner": "Custody Operations"
+      },
+      {
+        "item": "Data and integration boundaries defined",
+        "quality": "assumption",
+        "source": "Missing or unresolved",
+        "owner": "Architecture"
+      },
+      {
+        "item": "Cash settlement route and recovery identified",
+        "quality": "assumption",
+        "source": "User-marked ready; not independently verified",
+        "owner": "Settlement Operations"
+      },
+      {
+        "item": "Accountable workflow and exception owner assigned",
+        "quality": "assumption",
+        "source": "User-marked ready; not independently verified",
+        "owner": "Collateral Operations"
+      },
+      {
+        "item": "Pilot counterparty identified",
+        "quality": "assumption",
+        "source": "Missing or unresolved",
+        "owner": "Pilot Sponsor"
+      },
+      {
+        "item": "Representative workflow data available",
+        "quality": "assumption",
+        "source": "Missing or unresolved",
+        "owner": "Operations Analytics"
+      }
+    ],
+    "remediation": [
+      {
+        "action": "Baseline evidence has a traceable source: Capture a measurable baseline, source and observation period. A user-marked verified source is not independently checked by this application.",
+        "owner": "Operations Analytics",
+        "status": "OPEN"
+      },
+      {
+        "action": "Conventional alternative directly compared: Compare the incumbent workflow and conventional database/API option against the specific requirement; identify evidence for the stated gap.",
+        "owner": "Architecture",
+        "status": "OPEN"
+      },
+      {
+        "action": "Primary objective and trade-offs are acceptable: Material deterioration exceeds tolerance: Exception rate: deteriorates 11.1% (exceeds 10% tolerance). Explicitly accept the trade-off or revise the proposed case.",
+        "owner": "Collateral Operations",
+        "status": "OPEN"
+      },
+      {
+        "action": "Transfer, consent and eligibility rules defined: Document eligibility, transfer restrictions, consent, substitution and release rules.",
+        "owner": "Collateral Operations",
+        "status": "OPEN"
+      },
+      {
+        "action": "Collateral eligibility and haircut rules defined: Identify the agreement, asset criteria, valuation source, haircut schedule, concentration rules and override authority.",
+        "owner": "Collateral Risk",
+        "status": "OPEN"
+      },
+      {
+        "action": "Custody control and asset availability confirmed: Confirm control location, segregation, encumbrance status, authorization and release authority.",
+        "owner": "Custody Operations",
+        "status": "OPEN"
+      },
+      {
+        "action": "Data and integration boundaries defined: Map source data, interfaces, timestamps, identity, shared-state and reconciliation responsibilities.",
+        "owner": "Architecture",
+        "status": "OPEN"
+      },
+      {
+        "action": "Pilot counterparty identified: Identify a named participant willing to run a bounded shadow or controlled pilot.",
+        "owner": "Pilot Sponsor",
+        "status": "OPEN"
+      },
+      {
+        "action": "Representative workflow data available: Secure permissioned representative data and a repeatable source for like-for-like baseline comparison.",
+        "owner": "Operations Analytics",
+        "status": "OPEN"
+      }
+    ],
+    "reviewHistory": []
+  },
+  "lifecycle": {
+    "asOfDate": "2026-11-22",
+    "stage": "RELEASED",
+    "callAmountEur": 500000,
+    "cashDueEur": 7500,
+    "cashAvailableEur": 5000,
+    "assets": [
+      {
+        "id": "BOND-001",
+        "name": "Sample government bond",
+        "marketValueEur": 800000,
+        "haircutPct": 5,
+        "eligible": true,
+        "encumbered": false,
+        "observedAt": "2026-11-22"
+      },
+      {
+        "id": "BOND-002",
+        "name": "Sample corporate note",
+        "marketValueEur": 350000,
+        "haircutPct": 15,
+        "eligible": false,
+        "encumbered": false,
+        "observedAt": "2026-11-22"
+      },
+      {
+        "id": "BOND-003",
+        "name": "Sample encumbered bond",
+        "marketValueEur": 600000,
+        "haircutPct": 8,
+        "eligible": true,
+        "encumbered": true,
+        "observedAt": "2026-11-22"
+      }
+    ],
+    "selectedAssetId": "BOND-001",
+    "allocatedValueEur": 760000,
+    "settledCashEur": 7500,
+    "obligationDischarged": true,
+    "records": {
+      "agreement": "RELEASED",
+      "legalRegister": "RELEASED",
+      "inventory": "FREE",
+      "custody": "AVAILABLE",
+      "settlement": "RELEASE CONFIRMED"
+    },
+    "events": [
+      {
+        "id": "COL-EVT-001",
+        "action": "allocate",
+        "status": "BLOCKED",
+        "detail": "Asset is ineligible under the selected agreement rules.",
+        "evidenceId": "COL-EVID-001",
+        "at": "2026-11-22"
+      },
+      {
+        "id": "COL-EVT-002",
+        "action": "allocate",
+        "status": "APPLIED",
+        "detail": "BOND-001 reserved at haircut-adjusted value €760.000 against a €500.000 obligation.",
+        "evidenceId": "COL-EVID-002",
+        "at": "2026-11-22"
+      },
+      {
+        "id": "COL-EVT-003",
+        "action": "deliver",
+        "status": "APPLIED",
+        "detail": "Source delivery confirmed for BOND-001; cash leg €7.500 settled.",
+        "evidenceId": "COL-EVID-003",
+        "at": "2026-11-22"
+      },
+      {
+        "id": "COL-EVT-004",
+        "action": "discharge",
+        "status": "APPLIED",
+        "detail": "Authorized obligation discharge recorded; collateral may now enter the release workflow.",
+        "evidenceId": "COL-EVID-004",
+        "at": "2026-11-22"
+      },
+      {
+        "id": "COL-EVT-005",
+        "action": "release",
+        "status": "APPLIED",
+        "detail": "BOND-001 released after confirmed obligation discharge.",
+        "evidenceId": "COL-EVID-005",
+        "at": "2026-11-22"
+      },
+      {
+        "id": "COL-EVT-006",
+        "action": "reconcile",
+        "status": "APPLIED",
+        "detail": "Agreement, legal register, inventory and custody states reconcile at the current workflow stage.",
+        "evidenceId": "COL-EVID-006",
+        "at": "2026-11-22"
+      }
+    ]
+  },
+  "attempts": [
+    {
+      "action": "allocate",
+      "status": "BLOCKED",
+      "eventId": "COL-EVT-001",
+      "detail": "Asset is ineligible under the selected agreement rules."
+    },
+    {
+      "action": "allocate",
+      "status": "APPLIED",
+      "eventId": "COL-EVT-002",
+      "detail": "BOND-001 reserved at haircut-adjusted value €760.000 against a €500.000 obligation."
+    },
+    {
+      "action": "deliver",
+      "status": "APPLIED",
+      "eventId": "COL-EVT-003",
+      "detail": "Source delivery confirmed for BOND-001; cash leg €7.500 settled."
+    },
+    {
+      "action": "discharge",
+      "status": "APPLIED",
+      "eventId": "COL-EVT-004",
+      "detail": "Authorized obligation discharge recorded; collateral may now enter the release workflow."
+    },
+    {
+      "action": "release",
+      "status": "APPLIED",
+      "eventId": "COL-EVT-005",
+      "detail": "BOND-001 released after confirmed obligation discharge."
+    },
+    {
+      "action": "reconcile",
+      "status": "APPLIED",
+      "eventId": "COL-EVT-006",
+      "detail": "Agreement, legal register, inventory and custody states reconcile at the current workflow stage."
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "insufficient-cash",
+      "name": "Insufficient settlement cash",
+      "status": "PASS",
+      "outcome": "Insufficient settlement cash: €0 available; €7.500 due.",
+      "remediation": "Settlement Operations: restore and independently confirm the cash source before resubmitting.",
+      "state": {
+        "asOfDate": "2026-11-22",
+        "stage": "ALLOCATED",
+        "callAmountEur": 500000,
+        "cashDueEur": 7500,
+        "cashAvailableEur": 0,
+        "assets": [
+          {
+            "id": "BOND-001",
+            "name": "Sample government bond",
+            "marketValueEur": 800000,
+            "haircutPct": 5,
+            "eligible": true,
+            "encumbered": false,
+            "observedAt": "2026-11-22"
+          },
+          {
+            "id": "BOND-002",
+            "name": "Sample corporate note",
+            "marketValueEur": 350000,
+            "haircutPct": 15,
+            "eligible": false,
+            "encumbered": false,
+            "observedAt": "2026-11-22"
+          },
+          {
+            "id": "BOND-003",
+            "name": "Sample encumbered bond",
+            "marketValueEur": 600000,
+            "haircutPct": 8,
+            "eligible": true,
+            "encumbered": true,
+            "observedAt": "2026-11-22"
+          }
+        ],
+        "selectedAssetId": "BOND-001",
+        "allocatedValueEur": 760000,
+        "settledCashEur": 0,
+        "obligationDischarged": false,
+        "records": {
+          "agreement": "ALLOCATION PROPOSED",
+          "legalRegister": "ALLOCATION PROPOSED",
+          "inventory": "RESERVED",
+          "custody": "RESERVED",
+          "settlement": "NOT STARTED"
+        },
+        "events": [
+          {
+            "id": "COL-EVT-001",
+            "action": "allocate",
+            "status": "APPLIED",
+            "detail": "BOND-001 reserved at haircut-adjusted value €760.000 against a €500.000 obligation.",
+            "evidenceId": "COL-EVID-001",
+            "at": "2026-11-22"
+          },
+          {
+            "id": "COL-EVT-002",
+            "action": "deliver",
+            "status": "BLOCKED",
+            "detail": "Insufficient settlement cash: €0 available; €7.500 due.",
+            "evidenceId": "COL-EVID-002",
+            "at": "2026-11-22"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ineligible-collateral",
+      "name": "Ineligible collateral",
+      "status": "PASS",
+      "outcome": "Asset is ineligible under the selected agreement rules.",
+      "remediation": "Collateral Operations: select an asset that meets agreement criteria and retain the rejection reason.",
+      "state": {
+        "asOfDate": "2026-11-22",
+        "stage": "OPEN",
+        "callAmountEur": 500000,
+        "cashDueEur": 7500,
+        "cashAvailableEur": 12500,
+        "assets": [
+          {
+            "id": "BOND-001",
+            "name": "Sample government bond",
+            "marketValueEur": 800000,
+            "haircutPct": 5,
+            "eligible": true,
+            "encumbered": false,
+            "observedAt": "2026-11-22"
+          },
+          {
+            "id": "BOND-002",
+            "name": "Sample corporate note",
+            "marketValueEur": 350000,
+            "haircutPct": 15,
+            "eligible": false,
+            "encumbered": false,
+            "observedAt": "2026-11-22"
+          },
+          {
+            "id": "BOND-003",
+            "name": "Sample encumbered bond",
+            "marketValueEur": 600000,
+            "haircutPct": 8,
+            "eligible": true,
+            "encumbered": true,
+            "observedAt": "2026-11-22"
+          }
+        ],
+        "selectedAssetId": null,
+        "allocatedValueEur": 0,
+        "settledCashEur": 0,
+        "obligationDischarged": false,
+        "records": {
+          "agreement": "OPEN",
+          "legalRegister": "FREE",
+          "inventory": "FREE",
+          "custody": "AVAILABLE",
+          "settlement": "NOT STARTED"
+        },
+        "events": [
+          {
+            "id": "COL-EVT-001",
+            "action": "allocate",
+            "status": "BLOCKED",
+            "detail": "Asset is ineligible under the selected agreement rules.",
+            "evidenceId": "COL-EVID-001",
+            "at": "2026-11-22"
+          }
+        ]
+      }
+    },
+    {
+      "id": "failed-delivery",
+      "name": "Failed delivery",
+      "status": "PASS",
+      "outcome": "Delivery confirmation was not received; keep the obligation open and do not mark the asset mobilised.",
+      "remediation": "Custody Operations: query authoritative delivery status and retry only after state is known.",
+      "state": {
+        "asOfDate": "2026-11-22",
+        "stage": "ALLOCATED",
+        "callAmountEur": 500000,
+        "cashDueEur": 7500,
+        "cashAvailableEur": 12500,
+        "assets": [
+          {
+            "id": "BOND-001",
+            "name": "Sample government bond",
+            "marketValueEur": 800000,
+            "haircutPct": 5,
+            "eligible": true,
+            "encumbered": false,
+            "observedAt": "2026-11-22"
+          },
+          {
+            "id": "BOND-002",
+            "name": "Sample corporate note",
+            "marketValueEur": 350000,
+            "haircutPct": 15,
+            "eligible": false,
+            "encumbered": false,
+            "observedAt": "2026-11-22"
+          },
+          {
+            "id": "BOND-003",
+            "name": "Sample encumbered bond",
+            "marketValueEur": 600000,
+            "haircutPct": 8,
+            "eligible": true,
+            "encumbered": true,
+            "observedAt": "2026-11-22"
+          }
+        ],
+        "selectedAssetId": "BOND-001",
+        "allocatedValueEur": 760000,
+        "settledCashEur": 0,
+        "obligationDischarged": false,
+        "records": {
+          "agreement": "ALLOCATION PROPOSED",
+          "legalRegister": "ALLOCATION PROPOSED",
+          "inventory": "RESERVED",
+          "custody": "RESERVED",
+          "settlement": "NOT STARTED"
+        },
+        "events": [
+          {
+            "id": "COL-EVT-001",
+            "action": "allocate",
+            "status": "APPLIED",
+            "detail": "BOND-001 reserved at haircut-adjusted value €760.000 against a €500.000 obligation.",
+            "evidenceId": "COL-EVID-001",
+            "at": "2026-11-22"
+          },
+          {
+            "id": "COL-EVT-002",
+            "action": "deliver",
+            "status": "BLOCKED",
+            "detail": "Delivery confirmation was not received; keep the obligation open and do not mark the asset mobilised.",
+            "evidenceId": "COL-EVID-002",
+            "at": "2026-11-22"
+          }
+        ]
+      }
+    },
+    {
+      "id": "stale-data",
+      "name": "Stale valuation data",
+      "status": "PASS",
+      "outcome": "Asset valuation or inventory data is stale; refresh its source observation.",
+      "remediation": "Data Owner: fetch a fresh authorized valuation and inventory observation with source timestamp.",
+      "state": {
+        "asOfDate": "2026-11-22",
+        "stage": "OPEN",
+        "callAmountEur": 500000,
+        "cashDueEur": 7500,
+        "cashAvailableEur": 12500,
+        "assets": [
+          {
+            "id": "BOND-001",
+            "name": "Sample government bond",
+            "marketValueEur": 800000,
+            "haircutPct": 5,
+            "eligible": true,
+            "encumbered": false,
+            "observedAt": "2026-11-15"
+          },
+          {
+            "id": "BOND-002",
+            "name": "Sample corporate note",
+            "marketValueEur": 350000,
+            "haircutPct": 15,
+            "eligible": false,
+            "encumbered": false,
+            "observedAt": "2026-11-22"
+          },
+          {
+            "id": "BOND-003",
+            "name": "Sample encumbered bond",
+            "marketValueEur": 600000,
+            "haircutPct": 8,
+            "eligible": true,
+            "encumbered": true,
+            "observedAt": "2026-11-22"
+          }
+        ],
+        "selectedAssetId": null,
+        "allocatedValueEur": 0,
+        "settledCashEur": 0,
+        "obligationDischarged": false,
+        "records": {
+          "agreement": "OPEN",
+          "legalRegister": "FREE",
+          "inventory": "FREE",
+          "custody": "AVAILABLE",
+          "settlement": "NOT STARTED"
+        },
+        "events": [
+          {
+            "id": "COL-EVT-001",
+            "action": "allocate",
+            "status": "BLOCKED",
+            "detail": "Asset valuation or inventory data is stale; refresh its source observation.",
+            "evidenceId": "COL-EVID-001",
+            "at": "2026-11-22"
+          }
+        ]
+      }
+    },
+    {
+      "id": "reconciliation-mismatch",
+      "name": "Reconciliation mismatch",
+      "status": "PASS",
+      "outcome": "Reconciliation break: custody: observed AVAILABLE, expected DELIVERED. Preserve source records and route to the record owner.",
+      "remediation": "Operations: preserve all source observations and resolve with the agreement, inventory, custody and settlement owners.",
+      "state": {
+        "asOfDate": "2026-11-22",
+        "stage": "DELIVERED",
+        "callAmountEur": 500000,
+        "cashDueEur": 7500,
+        "cashAvailableEur": 12500,
+        "assets": [
+          {
+            "id": "BOND-001",
+            "name": "Sample government bond",
+            "marketValueEur": 800000,
+            "haircutPct": 5,
+            "eligible": true,
+            "encumbered": false,
+            "observedAt": "2026-11-22"
+          },
+          {
+            "id": "BOND-002",
+            "name": "Sample corporate note",
+            "marketValueEur": 350000,
+            "haircutPct": 15,
+            "eligible": false,
+            "encumbered": false,
+            "observedAt": "2026-11-22"
+          },
+          {
+            "id": "BOND-003",
+            "name": "Sample encumbered bond",
+            "marketValueEur": 600000,
+            "haircutPct": 8,
+            "eligible": true,
+            "encumbered": true,
+            "observedAt": "2026-11-22"
+          }
+        ],
+        "selectedAssetId": "BOND-001",
+        "allocatedValueEur": 760000,
+        "settledCashEur": 0,
+        "obligationDischarged": false,
+        "records": {
+          "agreement": "DELIVERED",
+          "legalRegister": "DELIVERED",
+          "inventory": "PLEDGED",
+          "custody": "AVAILABLE",
+          "settlement": "CONFIRMED"
+        },
+        "events": [
+          {
+            "id": "COL-EVT-001",
+            "action": "reconcile",
+            "status": "BLOCKED",
+            "detail": "Reconciliation break: custody: observed AVAILABLE, expected DELIVERED. Preserve source records and route to the record owner.",
+            "evidenceId": "COL-EVID-001",
+            "at": "2026-11-22"
+          }
+        ]
+      }
+    }
+  ]
+}

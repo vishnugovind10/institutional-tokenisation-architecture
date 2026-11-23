@@ -10,6 +10,7 @@
     "build": "npm run typecheck && vite build",
     "test": "vitest run",
     "docs:check": "node scripts/check-doc-links.mjs",
+    "sample:collateral": "node scripts/generate-collateral-assessment.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
